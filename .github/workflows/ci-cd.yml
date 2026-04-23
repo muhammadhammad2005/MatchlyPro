@@ -133,35 +133,163 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
 
-    - name: Upload Trivy scan results to GitHub Security tab
+    - name: Run Grype vulnerability scanner
+      uses: anchore/scan-action@v3
+      with:
+        path: "."
+        fail-build: false
+        output-format: "sarif"
+        severity-cutoff: "medium"
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      if: env.SNYK_TOKEN != ''
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'Matchly'
+        path: '.'
+        format: 'SARIF'
+        out: 'dependency-check-report.sarif'
+
+    - name: Upload security scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
-        sarif_file: 'trivy-results.sarif'
+        sarif_file: |
+          trivy-results.sarif
+          grype-report.sarif
+          dependency-check-report.sarif
 
   notify:
     name: Notify Status
     runs-on: ubuntu-latest
-    needs: [test, build-docker, deploy-vercel]
+    needs: [test, build-docker, deploy-vercel, security-scan]
     if: always()
     
     steps:
     - name: Determine workflow status
       id: check-status
       run: |
-        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.build-docker.result }}" == "success" ]]; then
+        # Check all job results
+        if [[ "${{ needs.test.result }}" == "success" && \
+              "${{ needs.build-docker.result }}" == "success" && \
+              "${{ needs.security-scan.result }}" == "success" ]]; then
           echo "status=success" >> $GITHUB_OUTPUT
-          echo "message=✅ All checks passed successfully!" >> $GITHUB_OUTPUT
+          echo "message=✅ All checks passed successfully! Pipeline completed." >> $GITHUB_OUTPUT
+          echo "emoji=✅" >> $GITHUB_OUTPUT
+        elif [[ "${{ needs.deploy-vercel.result }}" == "success" ]]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "message=✅ Deployment to Vercel successful! Application is live." >> $GITHUB_OUTPUT
+          echo "emoji=🚀" >> $GITHUB_OUTPUT
         else
           echo "status=failure" >> $GITHUB_OUTPUT
           echo "message=❌ Some checks failed. Please review the logs." >> $GITHUB_OUTPUT
+          echo "emoji=❌" >> $GITHUB_OUTPUT
         fi
+        
+        # Create summary message
+        echo "summary=Test: ${{ needs.test.result }}, Build: ${{ needs.build-docker.result }}, Security: ${{ needs.security-scan.result }}, Deploy: ${{ needs.deploy-vercel.result }}" >> $GITHUB_OUTPUT
+        echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
+        echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        echo "commit=${{ github.sha }}" >> $GITHUB_OUTPUT
+        echo "run_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
 
-    - name: Send Slack notification (optional)
-      if: failure()
-      uses: 8398a7/action-slack@v3
+    - name: Send WhatsApp notification via Twilio
+      if: env.TWILIO_ACCOUNT_SID != '' && env.TWILIO_AUTH_TOKEN != '' && env.TWILIO_WHATSAPP_FROM != '' && env.WHATSAPP_TO != ''
+      uses: twilio-labs/actions-sms@v1
       with:
-        status: ${{ steps.check-status.outputs.status }}
-        text: ${{ steps.check-status.outputs.message }}
+        from: ${{ env.TWILIO_WHATSAPP_FROM }}
+        to: ${{ env.WHATSAPP_TO }}
+        body: |
+          ${{ steps.check-status.outputs.emoji }} GitHub Actions - ${{ github.repository }}
+          
+          Status: ${{ steps.check-status.outputs.status }}
+          Branch: ${{ github.ref_name }}
+          
+          ${{ steps.check-status.outputs.message }}
+          
+          Details: ${{ steps.check-status.outputs.run_url }}
+          
+          ${{ steps.check-status.outputs.summary }}
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+        WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
+
+    - name: Send WhatsApp notification via CallMeBot (Alternative)
+      if: env.CALLMEBOT_API_KEY != '' && env.WHATSAPP_PHONE != ''
+      run: |
+        STATUS_EMOJI="${{ steps.check-status.outputs.emoji }}"
+        STATUS_MESSAGE="${{ steps.check-status.outputs.message }}"
+        REPO_NAME="${{ github.repository }}"
+        BRANCH_NAME="${{ github.ref_name }}"
+        RUN_URL="${{ steps.check-status.outputs.run_url }}"
+        
+        # URL encode the message
+        MESSAGE="${STATUS_EMOJI} GitHub Actions - ${REPO_NAME}%0A%0AStatus: ${{ steps.check-status.outputs.status }}%0ABranch: ${BRANCH_NAME}%0A%0A${STATUS_MESSAGE}%0A%0ADetails: ${RUN_URL}"
+        
+        # Send via CallMeBot API
+        curl -X POST \
+          "https://api.callmebot.com/whatsapp.php?phone=${{ secrets.WHATSAPP_PHONE }}&text=${MESSAGE}&apikey=${{ secrets.CALLMEBOT_API_KEY }}"
+      env:
+        CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+        WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+
+    - name: Send email notification (fallback)
+      if: env.SMTP_USER != '' && env.SMTP_PASS != '' && env.EMAIL_TO != ''
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USER }}
+        password: ${{ secrets.SMTP_PASS }}
+        subject: "GitHub Actions: ${{ steps.check-status.outputs.status }} - ${{ github.repository }}"
+        to: ${{ secrets.EMAIL_TO }}
+        from: GitHub Actions <${{ secrets.SMTP_USER }}>
+        body: |
+          GitHub Actions Workflow Status
+          
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Status: ${{ steps.check-status.outputs.status }}
+          
+          ${{ steps.check-status.outputs.message }}
+          
+          Job Results:
+          - Test: ${{ needs.test.result }}
+          - Build Docker: ${{ needs.build-docker.result }}
+          - Security Scan: ${{ needs.security-scan.result }}
+          - Deploy Vercel: ${{ needs.deploy-vercel.result }}
+          
+          View details: ${{ steps.check-status.outputs.run_url }}
+          
+          ---
+          This is an automated notification from GitHub Actions.
+
+    - name: Create workflow summary
+      run: |
+        echo "# Workflow Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## ${{ steps.check-status.outputs.emoji }} Status: ${{ steps.check-status.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.check-status.outputs.message }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Job Results:" >> $GITHUB_STEP_SUMMARY
+        echo "- Test: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Build Docker: ${{ needs.build-docker.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Deploy Vercel: ${{ needs.deploy-vercel.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Details:" >> $GITHUB_STEP_SUMMARY
+        echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Run URL: ${{ steps.check-status.outputs.run_url }}" >> $GITHUB_STEP_SUMMARY
