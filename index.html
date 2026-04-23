@@ -1,0 +1,2659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matchly</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%233B82F6"/><stop offset="100%" stop-color="%238B5CF6"/></linearGradient></defs><circle cx="64" cy="64" r="60" fill="none" stroke="url(%23g)" stroke-width="8"/><path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(%23g)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  />
+  <style>
+    :root {
+      --bg-accent:
+        radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.16), transparent 24%),
+        radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.16), transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, #eef2ff 100%);
+      --surface: rgba(255, 255, 255, 0.76);
+      --surface-strong: rgba(255, 255, 255, 0.94);
+      --surface-border: rgba(148, 163, 184, 0.18);
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --secondary: #8b5cf6;
+      --gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --primary-soft: rgba(59, 130, 246, 0.12);
+      --secondary-soft: rgba(139, 92, 246, 0.14);
+      --success: #16a34a;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      /* RGB values for rgba() usage */
+      --primary-rgb: 59, 130, 246;
+      --surface-rgb: 248, 250, 255;
+      --surface-border-rgb: 148, 163, 184;
+      --success-rgb: 34, 197, 94;
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+      --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --code-bg: rgba(241, 245, 249, 0.9);
+    }
+
+    body.dark {
+      --bg-accent:
+        radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.22), transparent 26%),
+        radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.22), transparent 24%),
+        linear-gradient(180deg, #08111f 0%, #0c1428 100%);
+      --surface: rgba(10, 16, 32, 0.78);
+      --surface-strong: rgba(13, 20, 38, 0.96);
+      --surface-border: rgba(148, 163, 184, 0.12);
+      --text: #e5ecf8;
+      --muted: #95a3bc;
+      --primary: #60a5fa;
+      --primary-dark: #3b82f6;
+      --secondary: #a78bfa;
+      --gradient: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      --primary-soft: rgba(96, 165, 250, 0.14);
+      --secondary-soft: rgba(167, 139, 250, 0.16);
+      --success: #4ade80;
+      --danger: #fb7185;
+      --warning: #fbbf24;
+      --shadow: 0 30px 90px rgba(2, 6, 23, 0.44);
+      --shadow-soft: 0 14px 34px rgba(2, 6, 23, 0.28);
+      /* RGB values for rgba() usage - dark theme */
+      --primary-rgb: 96, 165, 250;
+      --surface-rgb: 14, 23, 42;
+      --surface-dark-rgb: 14, 23, 42;
+      --surface-border-rgb: 148, 163, 184;
+      --success-rgb: 74, 222, 128;
+      --code-bg: rgba(15, 23, 42, 0.88);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Inter, sans-serif;
+      background: var(--bg-accent);
+      color: var(--text);
+      transition: background .35s ease, color .35s ease;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      opacity: .08;
+      background-position: center center;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, textarea { font: inherit; }
+
+    .app-shell { width: min(1240px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 48px; }
+    .glass {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease, background .35s ease;
+    }
+    .glass::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.04) 32%, rgba(255,255,255,.08) 48%, transparent 64%);
+      opacity: 0;
+      transform: translateX(-32%);
+      pointer-events: none;
+      transition: opacity .35s ease, transform .7s ease;
+    }
+    .glass:hover {
+      border-color: rgba(99,102,241,.18);
+      box-shadow: 0 28px 80px rgba(15,23,42,.16);
+    }
+    .glass:hover::after {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .topbar, .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 22px;
+      flex-wrap: wrap;
+    }
+    .topbar { margin-bottom: 20px; background: rgba(255,255,255,.86); animation: fadeSlideUp .7s cubic-bezier(.22,1,.36,1) both; }
+    body.dark .topbar { background: rgba(10,16,32,.9); }
+    .footer {
+      margin-top: 12px;
+      padding: 12px 22px;
+      align-items: center;
+    }
+
+    .brand-link, .footer-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform .25s ease, filter .25s ease;
+    }
+    .brand-link:hover, .footer-brand:hover { transform: scale(1.02); filter: drop-shadow(0 0 20px rgba(99,102,241,.25)); }
+    .brand-mark { width: 56px; height: 56px; display: grid; place-items: center; position: relative; isolation: isolate; }
+    .brand-mark svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 22px rgba(99,102,241,.22)); }
+    .brand-mark::before {
+      content: ""; position: absolute; inset: 8px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,.2), transparent 68%); filter: blur(10px); z-index: -1;
+    }
+    .logo-ring { opacity: .92; }
+    .logo-ring, .logo-path { stroke-dasharray: 420; stroke-dashoffset: 0; transform-origin: center; }
+    .logo-path { animation: logoDraw 1.8s ease .15s both; }
+    .logo-ring { animation: logoPulse 3.2s ease-in-out infinite; }
+    .logo-copy strong { display: block; font-size: 1.55rem; line-height: 1; letter-spacing: -.04em; font-weight: 800; }
+    .logo-copy span { display: block; margin-top: 4px; color: var(--muted); font-size: .92rem; }
+
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .theme-toggle {
+      border: 1px solid rgba(148,163,184,.16);
+      background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.42));
+      color: var(--text);
+      min-width: 126px;
+      height: 48px;
+      padding: 0 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: .96rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 12px 24px rgba(15,23,42,.08);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .25s ease, color .25s ease;
+    }
+    .theme-toggle::before {
+      content: "";
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--gradient);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 14px rgba(99,102,241,.26);
+    }
+    body.dark .theme-toggle {
+      border-color: rgba(148,163,184,.18);
+      background: linear-gradient(135deg, rgba(22,31,54,.96), rgba(30,28,58,.92));
+      color: #eef2ff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 14px 30px rgba(2,6,23,.34);
+    }
+    body.dark .theme-toggle::before {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 8px 18px rgba(99,102,241,.34);
+    }
+    .theme-toggle:hover {
+      border-color: rgba(99,102,241,.24);
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 16px 32px rgba(99,102,241,.18);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .95fr;
+      gap: 24px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 38px 30px;
+      margin-bottom: 24px;
+      animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .08s both;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      left: -90px;
+      top: -70px;
+      background: radial-gradient(circle, rgba(99,102,241,.24) 0%, rgba(59,130,246,.14) 35%, transparent 72%);
+      filter: blur(10px);
+      animation: ambientFloat 9s ease-in-out infinite;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      bottom: -110px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(139,92,246,.22) 0%, rgba(59,130,246,.08) 40%, transparent 72%);
+      filter: blur(16px);
+      animation: ambientFloat 12s ease-in-out infinite reverse;
+    }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
+      color: var(--primary);
+      font-weight: 700;
+      font-size: .88rem;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      line-height: .98;
+      letter-spacing: -.05em;
+      max-width: 14ch;
+      animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .14s both;
+    }
+    .hero p { margin: 16px 0 0; color: var(--muted); line-height: 1.7; max-width: 60ch; animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .22s both; }
+    .hero-actions { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+    .hero-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .mini-card {
+      padding: 20px;
+      border-radius: 22px;
+      background: var(--surface-strong);
+      border: 1px solid var(--surface-border);
+      box-shadow: var(--shadow-soft);
+      transform: translateY(0);
+      transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease, background .35s ease;
+    }
+    .mini-card:hover { transform: translateY(-6px); border-color: rgba(99,102,241,.22); box-shadow: 0 20px 45px rgba(99,102,241,.14); }
+    .mini-card:nth-child(1) { animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .26s both; }
+    .mini-card:nth-child(2) { animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .34s both; }
+    .mini-card:nth-child(3) { animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .42s both; }
+    .mini-card:nth-child(4) { animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .50s both; }
+    .mini-card strong { display: block; margin-bottom: 10px; font-size: 1.2rem; }
+    .mini-card span { color: var(--muted); line-height: 1.6; }
+
+    .workspace { display: grid; gap: 24px; }
+    .panel { padding: 24px; }
+    .panel.flat-panel {
+      background: var(--surface-strong);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      box-shadow: 0 20px 48px rgba(15,23,42,.1);
+    }
+    body.dark .panel.flat-panel {
+      background: #0f172c;
+      box-shadow: 0 22px 52px rgba(2,6,23,.22);
+    }
+    .panel.flat-panel::after {
+      display: none;
+    }
+    .panel.flat-panel:hover {
+      box-shadow: 0 24px 58px rgba(15,23,42,.12);
+    }
+    body.dark .panel.flat-panel:hover {
+      box-shadow: 0 24px 58px rgba(2,6,23,.28);
+    }
+    .workspace > .panel:nth-child(1) { animation: fadeSlideUp .8s cubic-bezier(.22,1,.36,1) .16s both; }
+    .workspace > .panel:nth-child(2) { animation: fadeSlideUp .85s cubic-bezier(.22,1,.36,1) .24s both; }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .section-head h3 { margin: 0; font-size: 1.35rem; letter-spacing: -.03em; }
+    .section-head p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; line-height: 1.6; }
+
+    .button-row, .dashboard-actions, .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    button {
+      border: 0;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 13px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s ease, box-shadow .25s ease, opacity .2s ease, background .25s ease, border-color .25s ease;
+    }
+    button::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,.2) 50%, transparent 80%);
+      transform: translateX(-130%);
+      transition: transform .65s ease;
+      pointer-events: none;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(15,23,42,.14); }
+    button:hover::after { transform: translateX(130%); }
+    .btn-primary { color: white; background: var(--gradient); box-shadow: 0 14px 30px rgba(99,102,241,.26), 0 0 0 1px rgba(255,255,255,.08) inset; }
+    .btn-primary:hover { box-shadow: 0 18px 38px rgba(99,102,241,.34), 0 0 30px rgba(99,102,241,.16); }
+    .btn-secondary { color: var(--text); background: var(--surface-strong); border: 1px solid var(--surface-border); box-shadow: var(--shadow-soft); }
+    .btn-tertiary { color: var(--secondary); background: var(--secondary-soft); }
+    .btn-danger { color: var(--danger); background: rgba(239,68,68,.1); }
+
+    .editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .field { position: relative; display: flex; flex-direction: column; gap: 10px; }
+    .field label {
+      font-size: .94rem;
+      font-weight: 700;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .field-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .field-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .field-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      box-shadow: 0 4px 20px rgba(var(--primary-rgb, 59, 130, 246), 0.25),
+                  0 1px 3px rgba(0, 0, 0, 0.1),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .upload-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+      border-radius: inherit;
+    }
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(var(--primary-rgb, 59, 130, 246), 0.35),
+                  0 3px 10px rgba(0, 0, 0, 0.15),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .upload-btn:hover::before {
+      opacity: 1;
+    }
+    .upload-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 10px rgba(var(--primary-rgb, 59, 130, 246), 0.3),
+                  0 1px 3px rgba(0, 0, 0, 0.1),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition-duration: 0.1s;
+    }
+    .upload-btn svg {
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+      transition: transform 0.3s ease;
+    }
+    .upload-btn:hover svg {
+      transform: scale(1.1) translateY(-1px);
+    }
+    /* Loading state */
+    .upload-btn.loading {
+      pointer-events: none;
+      opacity: 0.9;
+    }
+    .upload-btn.loading .btn-text {
+      opacity: 0.7;
+    }
+    .upload-btn.loading svg {
+      animation: spin 1s linear infinite;
+      transform-origin: center;
+    }
+    /* Success and error states */
+    .upload-btn.success {
+      background: linear-gradient(135deg, var(--success), #22c55e);
+      box-shadow: 0 4px 20px rgba(var(--success-rgb, 34, 197, 94), 0.3);
+    }
+    .upload-btn.error {
+      background: linear-gradient(135deg, var(--danger), #dc2626);
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+    }
+    /* File size indicator */
+    .file-size {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-left: 6px;
+      font-weight: 500;
+    }
+    /* Progress bar animation */
+    .upload-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      border-radius: 0 0 16px 16px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .upload-btn.loading .upload-progress {
+      animation: progressPulse 2s ease-in-out infinite;
+      width: 80%;
+    }
+    @keyframes progressPulse {
+      0%, 100% { width: 10%; opacity: 0.7; }
+      50% { width: 80%; opacity: 1; }
+    }
+    /* Drag and drop styles */
+    .editor-shell.drag-over {
+      border-color: var(--primary);
+      background: rgba(var(--primary-rgb, 59, 130, 246), 0.05);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 59, 130, 246), 0.15),
+                  inset 0 0 20px rgba(var(--primary-rgb, 59, 130, 246), 0.1);
+    }
+    .editor-shell.drag-over .editor-footer {
+      background: rgba(var(--primary-rgb, 59, 130, 246), 0.1);
+      border-color: rgba(var(--primary-rgb, 59, 130, 246), 0.3);
+    }
+    .drag-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(var(--surface-rgb, 255, 255, 255), 0.95);
+      border: 2px dashed var(--primary);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      width: 80%;
+      max-width: 400px;
+    }
+    .editor-shell.drag-over .drag-hint {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+    .drag-hint svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      color: var(--primary);
+      opacity: 0.9;
+    }
+    .drag-hint h4 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 1.2rem;
+    }
+    .drag-hint p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .drag-icon {
+      margin-bottom: 16px;
+    }
+    .drag-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .drag-subtext {
+      font-size: 0.9rem;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    /* Enhanced transitions and micro-interactions */
+    .upload-btn {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(var(--primary-rgb, 59, 130, 246), 0.25);
+    }
+    .upload-btn:active {
+      transform: translateY(0);
+      transition-duration: 0.1s;
+    }
+    .upload-btn.loading {
+      animation: pulse-subtle 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+    .editor-shell {
+      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.3s ease;
+    }
+    .upload-meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      min-height: 24px;
+      text-align: right;
+      padding: 6px 12px;
+      background: rgba(var(--surface-rgb, 255, 255, 255), 0.6);
+      border-radius: 10px;
+      border: 1px solid rgba(var(--surface-border-rgb, 148, 163, 184), 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .upload-meta::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .upload-meta.has-file {
+      color: var(--text);
+      font-weight: 600;
+      background: rgba(var(--success-rgb, 34, 197, 94), 0.1);
+      border-color: rgba(var(--success-rgb, 34, 197, 94), 0.2);
+      box-shadow: 0 1px 3px rgba(var(--success-rgb, 34, 197, 94), 0.1);
+    }
+    .upload-meta.has-file::before {
+      background: var(--success);
+      box-shadow: 0 0 0 2px rgba(var(--success-rgb, 34, 197, 94), 0.2);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(var(--success-rgb, 34, 197, 94), 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(var(--success-rgb, 34, 197, 94), 0); }
+      100% { box-shadow: 0 0 0 0 rgba(var(--success-rgb, 34, 197, 94), 0); }
+    }
+    body.dark .upload-meta {
+      background: rgba(var(--surface-dark-rgb, 30, 41, 59), 0.6);
+      border-color: rgba(148, 163, 184, 0.1);
+    }
+    body.dark .upload-meta.has-file {
+      background: rgba(var(--success-rgb, 34, 197, 94), 0.15);
+      border-color: rgba(var(--success-rgb, 34, 197, 94), 0.3);
+    }
+    .editor-shell { display: flex; flex-direction: column; gap: 10px; }
+    .editor-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(var(--surface-rgb, 248, 250, 255), 0.9);
+      border-radius: 14px;
+      border: 1px solid rgba(var(--surface-border-rgb, 148, 163, 184), 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+    }
+    .editor-footer:hover {
+      border-color: rgba(var(--primary-rgb, 59, 130, 246), 0.3);
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      background: rgba(var(--surface-rgb, 248, 250, 255), 0.9);
+    }
+    body.dark .editor-footer {
+      background: rgba(var(--surface-dark-rgb, 14, 23, 42), 0.7);
+      border-color: rgba(148, 163, 184, 0.12);
+      box-shadow: 0 2px 12px rgba(2, 6, 23, 0.2),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    body.dark .editor-footer:hover {
+      border-color: rgba(var(--primary-rgb, 59, 130, 246), 0.4);
+      background: rgba(var(--surface-dark-rgb, 14, 23, 42), 0.9);
+      box-shadow: 0 4px 20px rgba(2, 6, 23, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    textarea {
+      width: 100%;
+      min-height: 320px;
+      resize: none;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148,163,184,.2);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 18px 18px 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(248,250,255,.96) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(148,163,184,.05), 0 12px 28px rgba(15,23,42,.06);
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease;
+    }
+    body.dark textarea {
+      border-color: rgba(148,163,184,.14);
+      background: linear-gradient(180deg, rgba(12,20,38,.96) 0%, rgba(14,23,42,.98) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04), inset 0 -1px 0 rgba(148,163,184,.04), 0 14px 34px rgba(2,6,23,.22);
+    }
+    textarea:focus {
+      outline: none;
+      border-color: rgba(99,102,241,.34);
+      transform: translateY(-2px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 4px rgba(99,102,241,.12), 0 18px 36px rgba(99,102,241,.12), 0 0 30px rgba(99,102,241,.08);
+    }
+    .resize-grip {
+      align-self: center;
+      width: 84px;
+      height: 14px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid rgba(148,163,184,.14);
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(99,102,241,.12));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(15,23,42,.1);
+      cursor: ns-resize;
+    }
+    .resize-grip::before, .resize-grip::after, .resize-grip span {
+      content: "";
+      width: 14px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+    .workspace-utility-row {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .subpanel {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+      transition: border-color .28s ease, box-shadow .28s ease, transform .28s ease;
+    }
+    .subpanel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .subpanel-head h4 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .subpanel-head span {
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+    .history-item {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--surface-border);
+      background: var(--surface-strong);
+      box-shadow: var(--shadow-soft);
+      color: var(--text);
+      transition: transform .24s ease, box-shadow .24s ease, border-color .24s ease, color .24s ease;
+    }
+    .history-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: .96rem;
+      color: var(--text);
+    }
+    .history-item span,
+    .history-empty {
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+    .history-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(99,102,241,.2);
+      box-shadow: 0 14px 28px rgba(99,102,241,.08);
+    }
+    body.dark .history-item strong {
+      color: #eef2ff;
+    }
+    body.dark .history-item span,
+    body.dark .history-empty,
+    body.dark .subpanel-head span {
+      color: #a8b5ca;
+    }
+    .mini-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-quiet {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: transparent;
+      border: 1px solid var(--surface-border);
+      color: var(--muted);
+      box-shadow: none;
+    }
+    .dashboard-stack,
+    .deep-grid,
+    .insight-grid,
+    .section-grid {
+      display: grid;
+      gap: 18px;
+    }
+    .dashboard-stack {
+      gap: 20px;
+    }
+    .deep-grid,
+    .insight-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .section-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .section-card {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
+      border: 1px solid var(--surface-border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+    }
+    .section-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99,102,241,.2);
+      box-shadow: 0 14px 28px rgba(99,102,241,.08);
+    }
+    .section-card strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .section-card .score-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .section-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(148,163,184,.14);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .section-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--gradient);
+    }
+    .category-list,
+    .risk-list,
+    .insight-list,
+    .compare-list {
+      display: grid;
+      gap: 10px;
+    }
+    .category-row,
+    .risk-item,
+    .insight-item,
+    .compare-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
+    }
+    .category-row em,
+    .risk-item em,
+    .insight-item em,
+    .compare-item em {
+      font-style: normal;
+      color: var(--muted);
+      font-size: .88rem;
+      display: block;
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+    .pill-score,
+    .risk-pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
+      color: var(--secondary);
+      white-space: nowrap;
+    }
+    .risk-pill.high { background: rgba(239,68,68,.14); color: var(--danger); }
+    .risk-pill.medium { background: rgba(245,158,11,.14); color: var(--warning); }
+    .risk-pill.low { background: rgba(22,163,74,.12); color: var(--success); }
+    .compare-banner {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(139,92,246,.08));
+      border: 1px solid rgba(99,102,241,.16);
+    }
+    .compare-banner strong {
+      font-size: 1rem;
+    }
+    .compare-banner span {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .results-panel { position: relative; overflow: hidden; }
+    .results-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -45% auto;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(99,102,241,.14), transparent 68%);
+      animation: ambientFloat 10s ease-in-out infinite;
+    }
+    .dashboard { display: grid; gap: 18px; }
+    .score-grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+    .score-card, .info-card, .keywords-card, .resume-card {
+      background: var(--surface-strong);
+      border: 1px solid var(--surface-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      padding: 22px;
+      transition: transform .32s ease, box-shadow .32s ease, border-color .32s ease;
+    }
+    .score-card:hover, .info-card:hover, .keywords-card:hover, .resume-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99,102,241,.2);
+      box-shadow: 0 18px 42px rgba(99,102,241,.12);
+    }
+    .score-card { display: grid; place-items: center; text-align: center; }
+    .score-ring {
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle closest-side, var(--surface-strong) 77%, transparent 78% 100%),
+        conic-gradient(var(--primary) 0deg, var(--secondary) var(--angle), rgba(148,163,184,.18) var(--angle), rgba(148,163,184,.18) 360deg);
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 16px 40px rgba(99,102,241,.16);
+      position: relative;
+      animation: ringBreath 4.6s ease-in-out infinite;
+    }
+    .score-ring::after {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,.18), transparent 62%);
+      z-index: -1;
+      filter: blur(12px);
+      opacity: .7;
+      animation: ringGlow 3.8s ease-in-out infinite;
+    }
+    .score-ring-inner strong { display: block; font-size: 3rem; }
+    .score-ring-inner span { color: var(--muted); font-weight: 700; letter-spacing: .04em; font-size: .8rem; text-transform: uppercase; }
+    .confidence-pill {
+      margin-top: 18px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
+      color: var(--secondary);
+    }
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .metric {
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
+      border: 1px solid var(--surface-border);
+      transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+    }
+    .metric strong { display: block; font-size: 1.7rem; margin-bottom: 4px; }
+    .metric span, .suggestion-item span, .importance-item span { color: var(--muted); font-size: .92rem; }
+    .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .tag-groups, .suggestions-list, .importance-list { display: grid; gap: 12px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--code-bg);
+      border: 1px solid var(--surface-border);
+      font-size: .92rem;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .tag strong { font-size: .82rem; color: var(--muted); font-weight: 800; }
+    .tag.high { background: rgba(22,163,74,.12); color: var(--success); }
+    .tag.partial { background: rgba(245,158,11,.12); color: #c47f06; }
+    .tag.missing { background: rgba(139,92,246,.12); color: var(--secondary); }
+    .suggestion-item, .importance-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
+      border: 1px solid var(--surface-border);
+      transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+    }
+    .suggestion-item > div:first-child {
+      min-width: 0;
+    }
+    .suggestion-item strong {
+      display: block;
+      margin-bottom: 4px;
+      line-height: 1.35;
+      color: var(--text);
+    }
+    .suggestion-item span {
+      display: block;
+      line-height: 1.55;
+    }
+    .suggestion-item .badge,
+    .importance-item .badge {
+      align-self: center;
+    }
+    .importance-item > div:first-child {
+      min-width: 0;
+    }
+    .importance-item strong {
+      display: block;
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+    .importance-item span {
+      display: block;
+      line-height: 1.5;
+    }
+    .metric:hover, .suggestion-item:hover, .importance-item:hover, .tag:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99,102,241,.2);
+      box-shadow: 0 14px 28px rgba(99,102,241,.08);
+    }
+    body.dark .suggestion-item span,
+    body.dark .importance-item span,
+    body.dark .metric span,
+    body.dark .category-row em,
+    body.dark .risk-item em,
+    body.dark .insight-item em,
+    body.dark .compare-item em,
+    body.dark .compare-banner span {
+      color: #a8b5ca;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 56px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
+      color: var(--secondary);
+      font-weight: 800;
+      font-size: .84rem;
+    }
+    .resume-preview {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--code-bg);
+      border: 1px solid var(--surface-border);
+      white-space: pre-wrap;
+      line-height: 1.7;
+      max-height: 360px;
+      overflow: auto;
+      font-size: .96rem;
+    }
+    mark.matched-word,
+    mark.partial-word {
+      color: inherit;
+      border-radius: 8px;
+      padding: 1px 5px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      transition: background .2s ease, box-shadow .2s ease;
+    }
+    mark.matched-word {
+      background: linear-gradient(135deg, rgba(59,130,246,.16), rgba(59,130,246,.08));
+      box-shadow: inset 0 0 0 1px rgba(59,130,246,.18);
+    }
+    mark.partial-word {
+      background: linear-gradient(135deg, rgba(139,92,246,.15), rgba(139,92,246,.08));
+      box-shadow: inset 0 0 0 1px rgba(139,92,246,.18);
+    }
+    body.dark mark.matched-word {
+      background: linear-gradient(135deg, rgba(96,165,250,.2), rgba(37,99,235,.12));
+      box-shadow: inset 0 0 0 1px rgba(96,165,250,.24);
+    }
+    body.dark mark.partial-word {
+      background: linear-gradient(135deg, rgba(167,139,250,.18), rgba(124,58,237,.1));
+      box-shadow: inset 0 0 0 1px rgba(167,139,250,.24);
+    }
+    .empty-state {
+      padding: 30px;
+      border-radius: 20px;
+      background: var(--surface-strong);
+      border: 1px dashed var(--surface-border);
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7,17,31,.26);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .loader-overlay.visible { display: flex; }
+    .loader-card {
+      width: min(420px,100%);
+      padding: 28px;
+      border-radius: 28px;
+      background: var(--surface-strong);
+      border: 1px solid var(--surface-border);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .spinner {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      border: 4px solid rgba(148,163,184,.18);
+      border-top-color: var(--primary);
+      border-right-color: var(--secondary);
+      animation: spin .9s linear infinite;
+    }
+    .loader-card strong { display: block; font-size: 1.2rem; margin-bottom: 8px; }
+    .loader-card p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+    .footer-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .footer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      font-size: .9rem;
+      font-weight: 700;
+      transition: transform .26s ease, box-shadow .26s ease, border-color .26s ease;
+    }
+    .footer-chip:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(99,102,241,.12); }
+    .footer-chip::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--secondary);
+      box-shadow: 0 0 12px rgba(139,92,246,.4);
+    }
+
+    .motion-enter {
+      opacity: 0;
+      transform: translateY(24px) scale(.985);
+      transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .motion-enter.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes logoDraw { from { stroke-dashoffset: 420; } to { stroke-dashoffset: 0; } }
+    @keyframes logoPulse { 0%,100% { opacity: .88; } 50% { opacity: 1; } }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(26px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ambientFloat {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(12px, -10px, 0) scale(1.04); }
+    }
+    @keyframes ringBreath {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.015); }
+    }
+    @keyframes ringGlow {
+      0%, 100% { opacity: .42; transform: scale(.96); }
+      50% { opacity: .82; transform: scale(1.04); }
+    }
+
+    @media (max-width: 1120px) {
+      .hero, .score-grid, .breakdown-grid, .deep-grid, .insight-grid, .workspace-utility-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 940px) {
+      .editor-grid, .metrics, .hero-grid, .section-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .app-shell { width: min(100% - 18px, 1240px); }
+      .topbar, .hero, .panel, .footer { padding: 20px; }
+      textarea { min-height: 260px; }
+      .logo-copy span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader-overlay" id="loaderOverlay" aria-hidden="true">
+    <div class="loader-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <strong>Analyzing resume fit</strong>
+      <p>Preparing your match results.</p>
+    </div>
+  </div>
+
+  <main class="app-shell">
+    <header class="topbar glass">
+      <div class="brand-link" aria-label="Matchly home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="brandGradientNav" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#3B82F6"/>
+                <stop offset="100%" stop-color="#8B5CF6"/>
+              </linearGradient>
+            </defs>
+            <circle class="logo-ring" cx="64" cy="64" r="60" fill="none" stroke="url(#brandGradientNav)" stroke-width="4"/>
+            <path class="logo-path" d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(#brandGradientNav)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="logo-copy">
+          <strong>Matchly</strong>
+          <span>Premium ATS resume optimization</span>
+        </span>
+      </div>
+      <div class="topbar-actions">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark Mode</button>
+      </div>
+    </header>
+
+    <section class="hero glass">
+      <div>
+        <div class="eyebrow">Resume matching workspace</div>
+        <h1>Matchly helps tailor resumes for stronger ATS alignment.</h1>
+        <p>Review role fit, uncover missing terms, and refine your resume in a focused workspace built for fast iteration.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" id="heroAnalyzeBtn" type="button">Open Workspace</button>
+          <button class="btn-secondary" id="heroDemoBtn" type="button">Load Demo</button>
+        </div>
+      </div>
+      <div class="hero-grid">
+        <article class="mini-card"><strong>Live Matching</strong><span>Scores refresh as users type, paste, or load scenarios.</span></article>
+        <article class="mini-card"><strong>Priority Signals</strong><span>Core skills and role terms stand out more clearly during review.</span></article>
+        <article class="mini-card"><strong>Strong Match Demo</strong><span>Load a polished sample to preview a strong result set.</span></article>
+        <article class="mini-card"><strong>Private Workspace</strong><span>Work through resumes and job descriptions in a focused, self-contained flow.</span></article>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel glass flat-panel motion-enter" id="workspacePanel">
+        <div class="section-head">
+          <div>
+            <h3>Input Workspace</h3>
+            <p>Paste the role and resume to compare fit, spot gaps, and improve alignment as you edit.</p>
+          </div>
+          <div class="button-row">
+            <button class="btn-primary" id="analyzeBtn" type="button">Analyze Match</button>
+            <button class="btn-secondary" id="demoBtn" type="button">Load Demo Data</button>
+            <button class="btn-danger" id="clearBtn" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div class="editor-grid">
+          <div class="field">
+            <label for="jobDescription">
+              <span>Job Description</span>
+              <span id="jdCount">0 chars</span>
+            </label>
+            <div class="editor-shell">
+              <textarea id="jobDescription" placeholder="Paste the target job description here..."></textarea>
+              <button class="resize-grip" type="button" data-target="jobDescription" aria-label="Resize job description editor"><span></span></button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="resumeText">
+              <span>Resume</span>
+              <span id="resumeCount">0 chars</span>
+            </label>
+            <input id="resumePdfInput" type="file" accept="application/pdf,.pdf" hidden />
+            <div class="editor-shell" id="resumeEditorShell">
+              <textarea id="resumeText" placeholder="Paste the resume here..."></textarea>
+              <button class="resize-grip" type="button" data-target="resumeText" aria-label="Resize resume editor"><span></span></button>
+              <div class="drag-hint" id="dragHint" aria-hidden="true">
+                <div class="drag-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
+                    <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M14 2V8H20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                  </svg>
+                </div>
+                <p class="drag-text">Drop your PDF here</p>
+                <p class="drag-subtext">or click the Upload PDF button below</p>
+              </div>
+              <div class="editor-footer">
+                <button class="upload-btn" id="resumeUploadBtn" type="button" aria-label="Upload PDF resume" aria-describedby="uploadDescription">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;" aria-hidden="true">
+                    <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M14 2V8H20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M16 13H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M16 17H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M10 9H9H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                  <span class="btn-text">Upload PDF</span>
+                  <div class="upload-progress"></div>
+                </button>
+                <span class="upload-meta" id="resumeUploadMeta">No file selected</span>
+                <span id="uploadDescription" class="sr-only">Upload a PDF resume file. Supports drag and drop.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-line">
+          <span id="statusText">Ready when you are.</span>
+        </div>
+
+        <div class="workspace-utility-row">
+          <div class="subpanel motion-enter">
+            <div class="subpanel-head">
+              <h4>Recent Sessions</h4>
+              <button class="btn-quiet" id="clearHistoryBtn" type="button">Clear History</button>
+            </div>
+            <div class="history-list" id="historyContainer">
+              <div class="history-empty">No saved sessions yet.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel glass results-panel motion-enter">
+        <div class="section-head">
+          <div>
+            <h3>Results Dashboard</h3>
+            <p>See score, coverage, and highlighted evidence in one place.</p>
+          </div>
+          <div class="dashboard-actions">
+            <button class="btn-secondary" id="copyBtn" type="button">Copy Results</button>
+            <button class="btn-tertiary" id="exportBtn" type="button">Export Summary</button>
+            <button class="btn-tertiary" id="saveSnapshotBtn" type="button">Save Snapshot</button>
+          </div>
+        </div>
+
+        <div id="resultsContainer">
+          <div class="empty-state">
+            Add a role and a resume to view your results.
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer glass motion-enter">
+      <div class="footer-brand" aria-label="Matchly footer brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="brandGradientFooter" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#3B82F6"/>
+                <stop offset="100%" stop-color="#8B5CF6"/>
+              </linearGradient>
+            </defs>
+            <circle class="logo-ring" cx="64" cy="64" r="60" fill="none" stroke="url(#brandGradientFooter)" stroke-width="4"/>
+            <path class="logo-path" d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(#brandGradientFooter)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="logo-copy">
+          <strong>Matchly</strong>
+          <span>Resume matching</span>
+        </span>
+      </div>
+      <div class="footer-meta">
+        <span class="footer-chip">Private Workspace</span>
+        <span class="footer-chip">Client-Side Scoring</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    const stopwords = new Set([
+      "a","about","above","after","again","against","all","am","an","and","any","are","as","at","be","because","been","before","being","below","between","both","but","by","can","cannot","could","did","do","does","doing","down","during","each","few","for","from","further","had","has","have","having","he","her","here","hers","herself","him","himself","his","how","i","if","in","into","is","it","its","itself","just","me","more","most","my","myself","no","nor","not","of","off","on","once","only","or","other","our","ours","ourselves","out","over","own","same","she","should","so","some","such","than","that","the","their","theirs","them","themselves","then","there","these","they","this","those","through","to","too","under","until","up","very","was","we","were","what","when","where","which","while","who","whom","why","with","would","you","your","yours","yourself","yourselves"
+    ]);
+
+    const synonymMap = {
+      javascript:"javascript",js:"javascript",ecmascript:"javascript",reactjs:"react",react:"react",nodejs:"node",node:"node",
+      leadership:"lead",leading:"lead",led:"lead",manager:"manage",managing:"manage",management:"manage",
+      develop:"develop",developer:"develop",development:"develop",developing:"develop",engineered:"engineer",
+      engineering:"engineer",engineer:"engineer",analysis:"analyze",analytical:"analyze",analyzing:"analyze",analyzed:"analyze",
+      architect:"architecture",architectural:"architecture",designing:"design",designer:"design",designed:"design",
+      scalable:"scale",scaling:"scale",scaled:"scale",automation:"automate",automated:"automate",automating:"automate",
+      collaboration:"collaborate",collaborative:"collaborate",collaborating:"collaborate",stakeholder:"stakeholder",stakeholders:"stakeholder",
+      sql:"sql",nosql:"nosql",ai:"artificialintelligence",ml:"machinelearning",aws:"aws",azure:"azure",gcp:"gcp",
+      kubernetes:"kubernetes",k8s:"kubernetes",microservices:"microservice",microservice:"microservice",api:"api",apis:"api",
+      restful:"rest",rest:"rest",ci:"cicd",cd:"cicd",cicd:"cicd"
+    };
+
+    const technicalHints = new Set([
+      "javascript","typescript","python","java","react","node","sql","nosql","aws","azure","gcp","docker","kubernetes",
+      "terraform","graphql","rest","api","microservice","analytics","architecture","automation","security","testing",
+      "cicd","machinelearning","artificialintelligence","lead","stakeholder"
+    ]);
+
+    const categoryHints = {
+      technical: new Set(["javascript","typescript","python","java","react","node","sql","nosql","graphql","rest","api","docker","kubernetes","terraform","microservice","architecture","testing","security","analytics","machinelearning","artificialintelligence"]),
+      tools: new Set(["aws","azure","gcp","docker","kubernetes","terraform","graphql","sql","nosql","cicd","api","rest"]),
+      leadership: new Set(["lead","manage","stakeholder","mentor","ownership","strategy","roadmap","collaborate"]),
+      soft: new Set(["communication","problem","collaborate","adaptability","judgment","leadership","stakeholder"]),
+      domain: new Set(["saas","platform","product","customer","dashboard","reporting","kpi","workflow","compliance","finance","healthcare"])
+    };
+
+    const weakPhrases = [
+      "responsible for", "helped with", "worked on", "involved in", "participated in", "tasked with", "assisted with"
+    ];
+
+    const strongActionVerbs = new Set([
+      "built","led","shipped","optimized","automated","reduced","improved","delivered","designed","scaled","implemented","launched","owned","migrated","resolved","drove"
+    ]);
+
+    const demoScenarios = [
+      {
+        label: "High Match 90+ Showcase",
+        featured: true,
+        jobDescription: `Senior Full-Stack JavaScript Engineer
+
+We are hiring a Senior Full-Stack JavaScript Engineer to build scalable SaaS experiences across the product stack. You will work with product managers, designers, and engineering leaders to ship performant web applications, reusable UI systems, and reliable API integrations.
+
+Responsibilities:
+- Build responsive front-end experiences using JavaScript, HTML, CSS, and reusable component patterns
+- Develop scalable product features and optimize application performance
+- Integrate REST APIs and data-driven workflows across customer-facing surfaces
+- Improve testing automation, CI/CD workflows, and code quality practices
+- Collaborate with stakeholders, mentor developers, and contribute to technical documentation
+- Support accessibility, responsive design, and maintainable architecture decisions
+
+Requirements:
+- 5+ years of software engineering experience
+- Deep knowledge of JavaScript, performance optimization, accessibility, and responsive design
+- Experience with analytics, product development, stakeholder communication, and agile collaboration
+- Familiarity with cloud platforms, security best practices, and scalable architecture
+- Strong leadership, problem solving, and engineering communication skills`,
+        resume: `Senior Full-Stack Engineer
+
+Professional Summary:
+Senior Full-Stack JavaScript Engineer with 6 years of software engineering experience building scalable SaaS web applications and customer-facing product features. I develop responsive front-end experiences using JavaScript, HTML, CSS, and reusable component patterns. I collaborate with product managers, designers, stakeholders, and engineering leaders to deliver performant applications, reliable API integrations, and maintainable architecture decisions.
+
+Experience Highlights:
+- Built responsive front-end experiences using JavaScript, HTML, CSS, and reusable component patterns
+- Developed scalable product features and optimized application performance across SaaS workflows
+- Integrated REST APIs and data-driven workflows across customer-facing dashboards and product surfaces
+- Improved testing automation, CI/CD workflows, and code quality practices across engineering teams
+- Supported accessibility, responsive design, security best practices, and maintainable architecture decisions
+- Collaborated with stakeholders, mentored developers, and contributed to technical documentation
+
+Additional Skills:
+JavaScript, performance optimization, accessibility, responsive design, analytics, product development, stakeholder communication, agile collaboration, cloud platforms, scalable architecture, leadership, problem solving, engineering communication`
+      },
+      {
+        label: "Product Software Engineer",
+        jobDescription: `Senior Product Software Engineer
+
+We are hiring a Senior Product Software Engineer to build scalable web applications and customer-facing platform features. You will collaborate with product managers, designers, and stakeholders to deliver modern JavaScript experiences with strong performance, accessibility, and maintainability.
+
+Responsibilities:
+- Design and develop responsive front-end architecture using JavaScript, HTML, CSS, and component-driven UI patterns
+- Build reusable platform modules and scalable application workflows
+- Partner with product, analytics, and engineering leadership to shape roadmap delivery
+- Create REST APIs integration layers and optimize data-driven user flows`,
+        resume: `Senior Front-End Engineer
+
+Professional Summary:
+Product-minded software engineer with 6 years of experience building customer-facing web applications. I develop performant interfaces using JavaScript, HTML, CSS, and reusable UI systems. I have partnered with product managers, designers, and cross-functional stakeholders to deliver responsive features and measurable business impact.
+
+Experience Highlights:
+- Engineered scalable application modules and improved front-end architecture for a SaaS dashboard
+- Built data visualization workflows and analytics reporting experiences
+- Integrated REST services and optimized user journeys for performance and accessibility`
+      },
+      {
+        label: "Data Analyst",
+        jobDescription: `Senior Data Analyst
+
+Analyze large datasets using SQL, dashboard reporting, KPI measurement, experimentation, and stakeholder communication.`,
+        resume: `Business Intelligence Analyst
+
+Analyst with 5 years of experience delivering dashboards, reporting, and business insights for product and revenue teams. I specialize in SQL, KPI tracking, trend analysis, and stakeholder-ready reporting.`
+      }
+    ];
+
+    const elements = {
+      jd: document.getElementById("jobDescription"),
+      resume: document.getElementById("resumeText"),
+      analyze: document.getElementById("analyzeBtn"),
+      demo: document.getElementById("demoBtn"),
+      clear: document.getElementById("clearBtn"),
+      clearHistory: document.getElementById("clearHistoryBtn"),
+      copy: document.getElementById("copyBtn"),
+      export: document.getElementById("exportBtn"),
+      saveSnapshot: document.getElementById("saveSnapshotBtn"),
+      results: document.getElementById("resultsContainer"),
+      loader: document.getElementById("loaderOverlay"),
+      status: document.getElementById("statusText"),
+      themeToggle: document.getElementById("themeToggle"),
+      jdCount: document.getElementById("jdCount"),
+      resumeCount: document.getElementById("resumeCount"),
+      resumeUploadBtn: document.getElementById("resumeUploadBtn"),
+      resumePdfInput: document.getElementById("resumePdfInput"),
+      resumeUploadMeta: document.getElementById("resumeUploadMeta"),
+      historyContainer: document.getElementById("historyContainer"),
+      workspace: document.getElementById("workspacePanel"),
+      heroAnalyzeBtn: document.getElementById("heroAnalyzeBtn"),
+      heroDemoBtn: document.getElementById("heroDemoBtn")
+    };
+
+    const HISTORY_KEY = "matchly-history-v1";
+
+    let liveAnalysisTimeout = null;
+    let lastDemoIndex = -1;
+    let lastAnalysis = null;
+    let motionObserver = null;
+    const memoryStore = new Map();
+
+    const safeStorage = {
+      getItem(key) {
+        try {
+          return window.localStorage.getItem(key);
+        } catch {
+          return memoryStore.has(key) ? memoryStore.get(key) : null;
+        }
+      },
+      setItem(key, value) {
+        try {
+          window.localStorage.setItem(key, value);
+        } catch {
+          memoryStore.set(key, value);
+        }
+      },
+      removeItem(key) {
+        try {
+          window.localStorage.removeItem(key);
+        } catch {
+          memoryStore.delete(key);
+        }
+      }
+    };
+
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function basicStem(word) {
+      if (word.length <= 3) return word;
+      const rules = [
+        [/ments$/i, "ment"], [/ations$/i, "ate"], [/izers$/i, "ize"], [/iness$/i, "y"], [/ingly$/i, ""],
+        [/edly$/i, ""], [/ation$/i, "ate"], [/ition$/i, "ite"], [/ments?$/i, ""], [/ships?$/i, ""],
+        [/ances?$/i, ""], [/ences?$/i, ""], [/izers?$/i, "ize"], [/isers?$/i, "ize"], [/ities$/i, "ity"],
+        [/ing$/i, ""], [/ied$/i, "y"], [/ies$/i, "y"], [/ed$/i, ""], [/ers$/i, "er"], [/er$/i, ""], [/s$/i, ""]
+      ];
+      let stemmed = word;
+      for (const [pattern, replacement] of rules) {
+        if (stemmed.length > 4 && pattern.test(stemmed)) {
+          stemmed = stemmed.replace(pattern, replacement);
+          break;
+        }
+      }
+      if (stemmed.endsWith("i") && stemmed.length > 4) stemmed = stemmed.slice(0, -1) + "y";
+      return stemmed;
+    }
+
+    function normalizeToken(raw) {
+      let token = raw.toLowerCase().trim();
+      token = token.replace(/^[^a-z0-9+#.]+|[^a-z0-9+#.]+$/g, "");
+      token = basicStem(token);
+      return synonymMap[token] || token;
+    }
+
+    function preprocessText(text) {
+      const rawTokens = text.match(/[A-Za-z0-9+#.]+/g) || [];
+      const processed = [];
+      rawTokens.forEach((raw) => {
+        const cleaned = raw.toLowerCase().replace(/[^a-z0-9+#.]/g, "");
+        if (!cleaned || stopwords.has(cleaned)) return;
+        const normalized = normalizeToken(raw);
+        if (!normalized || stopwords.has(normalized) || normalized.length < 2) return;
+        processed.push({
+          raw,
+          normalized,
+          capitalized: /^[A-Z]/.test(raw),
+          technical: cleaned.length > 6 || technicalHints.has(normalized) || /[+#.]/.test(raw)
+        });
+      });
+      return processed;
+    }
+
+    function calculateTermFrequency(tokens) {
+      const frequency = new Map();
+      tokens.forEach((token) => {
+        frequency.set(token.normalized, (frequency.get(token.normalized) || 0) + 1);
+      });
+      return frequency;
+    }
+
+    function buildImportanceWeights(jdTokens, jdTF) {
+      const total = Math.max(jdTokens.length, 1);
+      const meta = new Map();
+      jdTokens.forEach((token) => {
+        if (!meta.has(token.normalized)) {
+          meta.set(token.normalized, {
+            capitalized: token.capitalized,
+            technical: token.technical,
+            rawSamples: new Set([token.raw])
+          });
+        } else {
+          meta.get(token.normalized).rawSamples.add(token.raw);
+          meta.get(token.normalized).capitalized ||= token.capitalized;
+          meta.get(token.normalized).technical ||= token.technical;
+        }
+      });
+
+      const weights = new Map();
+      jdTF.forEach((count, term) => {
+        const tf = count / total;
+        const info = meta.get(term);
+        const rarityBoost = 1 + (1 - tf) * 2.6;
+        const technicalBoost = info.technical ? 1.55 : 1;
+        const capitalizationBoost = info.capitalized ? 1.15 : 1;
+        const phraseBoost = term.length >= 10 ? 1.18 : 1;
+        const commonPenalty = tf > 0.06 ? 0.78 : 1;
+        const display = [...info.rawSamples].sort((a, b) => b.length - a.length)[0] || term;
+        weights.set(term, {
+          weight: tf * 100 * rarityBoost * technicalBoost * capitalizationBoost * phraseBoost * commonPenalty,
+          count,
+          display
+        });
+      });
+      return weights;
+    }
+
+    function commonPrefixLength(a, b) {
+      let i = 0;
+      while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+      return i;
+    }
+
+    function levenshtein(a, b) {
+      const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+      for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+      for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return matrix[a.length][b.length];
+    }
+
+    function similarityRatio(termA, termB) {
+      if (termA === termB) return 1;
+      if (termA.includes(termB) || termB.includes(termA)) return 0.82;
+      const prefix = commonPrefixLength(termA, termB);
+      const shorter = Math.min(termA.length, termB.length) || 1;
+      if (prefix / shorter >= 0.7) return 0.68;
+      return 1 - levenshtein(termA, termB) / (Math.max(termA.length, termB.length) || 1);
+    }
+
+    function getConfidence(score) {
+      if (score >= 78) return { label: "High Match" };
+      if (score >= 52) return { label: "Medium Match" };
+      return { label: "Low Match" };
+    }
+
+    function buildSummary(score, missing, topKeywords, sectionAnalysis = [], risks = [], roleFamily = "General Technology") {
+      const leading = topKeywords.slice(0, 5).map((item) => item.term).join(", ");
+      const recommended = missing.slice(0, 6).map((item) => item.term).join(", ") || "No urgent keyword gaps detected";
+      const weakestSection = sectionAnalysis.length ? [...sectionAnalysis].sort((a, b) => a.score - b.score)[0].name : "General";
+      const topRisk = risks[0]?.title || "No major risks detected";
+      return [
+        "Match Overview",
+        `Role Family: ${roleFamily}`,
+        `Match Score: ${score.toFixed(1)}%`,
+        `Confidence: ${getConfidence(score).label}`,
+        `Top Role Terms: ${leading}`,
+        `Suggested Additions: ${recommended}`,
+        `Section To Improve: ${weakestSection}`,
+        `Key Risk: ${topRisk}`,
+        "Workspace: Private and self-contained."
+      ].join("\n");
+    }
+
+    function highlightResume(text, matchedTerms, partialTerms) {
+      return escapeHtml(text).split(/(\b)/).map((chunk) => {
+        const normalized = normalizeToken(chunk);
+        if (!normalized) return chunk;
+        if (matchedTerms.has(normalized)) return `<mark class="matched-word">${chunk}</mark>`;
+        if (partialTerms.has(normalized)) return `<mark class="partial-word">${chunk}</mark>`;
+        return chunk;
+      }).join("");
+    }
+
+    function parseResumeSections(text) {
+      const normalizedText = text.replace(/\r/g, "");
+      const lines = normalizedText.split("\n");
+      const sections = [];
+      let current = { name: "General", content: [] };
+      const headingMatchers = [
+        { pattern: /professional summary|summary|profile/i, name: "Summary" },
+        { pattern: /experience highlights|experience|employment|work history/i, name: "Experience" },
+        { pattern: /projects|project highlights/i, name: "Projects" },
+        { pattern: /skills|additional skills|technical skills|core skills/i, name: "Skills" },
+        { pattern: /education|academic/i, name: "Education" },
+        { pattern: /certifications|certificates/i, name: "Certifications" }
+      ];
+
+      lines.forEach((line) => {
+        const trimmed = line.trim();
+        const matchedHeading = headingMatchers.find((item) => item.pattern.test(trimmed) && trimmed.length < 40);
+        if (matchedHeading) {
+          if (current.content.join(" ").trim()) sections.push({ ...current, content: current.content.join("\n").trim() });
+          current = { name: matchedHeading.name, content: [] };
+        } else {
+          current.content.push(line);
+        }
+      });
+
+      if (current.content.join(" ").trim()) sections.push({ ...current, content: current.content.join("\n").trim() });
+      return sections.length ? sections : [{ name: "General", content: text }];
+    }
+
+    function scoreTextAgainstWeights(text, weights) {
+      const tokens = preprocessText(text);
+      const tf = calculateTermFrequency(tokens);
+      let possible = 0;
+      let earned = 0;
+      weights.forEach((meta, term) => {
+        possible += meta.weight;
+        if (tf.has(term)) earned += meta.weight;
+      });
+      return possible ? clamp((earned / possible) * 100, 0, 100) : 0;
+    }
+
+    function categorizeKeyword(term) {
+      if (categoryHints.technical.has(term)) return "Technical Skills";
+      if (categoryHints.tools.has(term)) return "Tools & Platforms";
+      if (categoryHints.leadership.has(term)) return "Leadership";
+      if (categoryHints.soft.has(term)) return "Soft Skills";
+      if (categoryHints.domain.has(term)) return "Domain Terms";
+      if (term.length > 8) return "Technical Skills";
+      return "General Fit";
+    }
+
+    function buildKeywordCategories(topKeywords, missing, highMatch) {
+      const categories = new Map();
+
+      [...topKeywords.slice(0, 16), ...missing.slice(0, 10), ...highMatch.slice(0, 10)].forEach((item) => {
+        const category = categorizeKeyword(normalizeToken(item.term));
+        if (!categories.has(category)) {
+          categories.set(category, { label: category, top: [], matched: 0, total: 0 });
+        }
+        const target = categories.get(category);
+        target.total += 1;
+        if (highMatch.some((entry) => entry.term === item.term)) target.matched += 1;
+        if (target.top.length < 4 && !target.top.includes(item.term)) target.top.push(item.term);
+      });
+
+      return [...categories.values()].map((item) => ({
+        ...item,
+        coverage: item.total ? Math.round((item.matched / item.total) * 100) : 0
+      })).sort((a, b) => b.coverage - a.coverage);
+    }
+
+    function detectRoleFamily(text) {
+      const source = text.toLowerCase();
+      if (/devops|infrastructure|platform|cloud/.test(source)) return "DevOps / Platform";
+      if (/frontend|front-end|react|ui/.test(source)) return "Frontend Engineering";
+      if (/backend|api|microservice|server/.test(source)) return "Backend Engineering";
+      if (/full-stack|full stack/.test(source)) return "Full-Stack Engineering";
+      if (/data analyst|analytics|bi|dashboard|sql/.test(source)) return "Data / Analytics";
+      if (/product manager|roadmap|stakeholder/.test(source)) return "Product / Delivery";
+      return "General Technology";
+    }
+
+    function detectSeniority(text) {
+      const source = text.toLowerCase();
+      if (/principal|staff/.test(source)) return "Staff+";
+      if (/senior|lead/.test(source)) return "Senior";
+      if (/mid|intermediate/.test(source)) return "Mid-level";
+      if (/junior|entry/.test(source)) return "Junior";
+      return "Unspecified";
+    }
+
+    function buildJdInsights(jd, topKeywords, missing) {
+      const lower = jd.toLowerCase();
+      const mustHave = topKeywords.slice(0, 5).map((item) => item.term);
+      const repeated = topKeywords.slice(0, 6).map((item) => item.term);
+      return [
+        { title: "Role Family", detail: detectRoleFamily(jd), note: "Detected from the strongest role language." },
+        { title: "Seniority", detail: detectSeniority(jd), note: "Estimated from title and expectation wording." },
+        { title: "Top Requirements", detail: mustHave.join(", "), note: "These terms appear to carry the most weight." },
+        { title: "Biggest Gaps", detail: missing.slice(0, 4).map((item) => item.term).join(", ") || "No major gaps", note: "These are the clearest areas to improve next." },
+        { title: "Repeated Themes", detail: repeated.join(", "), note: "These themes shape the role most strongly." }
+      ];
+    }
+
+    function buildSectionAnalysis(resume, weights, missing) {
+      const sections = parseResumeSections(resume);
+      return sections.map((section) => {
+        const score = scoreTextAgainstWeights(section.content, weights);
+        const suggested = missing.find((item) => {
+          const category = categorizeKeyword(normalizeToken(item.term));
+          if (section.name === "Skills" && /Technical|Tools/.test(category)) return true;
+          if (section.name === "Experience" && /Leadership|General|Technical/.test(category)) return true;
+          if (section.name === "Summary") return true;
+          return false;
+        });
+        return {
+          name: section.name,
+          score,
+          sample: section.content.slice(0, 120) || "No section content detected.",
+          suggestion: suggested ? `Add ${suggested.term} here with a concrete example.` : "This section looks aligned."
+        };
+      }).sort((a, b) => b.score - a.score);
+    }
+
+    function buildRiskReport(jd, resume, missing, highMatch, sectionAnalysis) {
+      const risks = [];
+      const lowerResume = resume.toLowerCase();
+      const yearsMentioned = /(\d+)\+?\s+years?/.test(lowerResume);
+      const roleFamily = detectRoleFamily(jd);
+      const roleKeywordMap = {
+        "DevOps / Platform": /devops|cloud|infrastructure|kubernetes|docker|terraform/,
+        "Frontend Engineering": /frontend|javascript|react|ui|css|html/,
+        "Backend Engineering": /backend|api|server|node|microservice|database/,
+        "Full-Stack Engineering": /frontend|backend|javascript|api|product/,
+        "Data / Analytics": /sql|dashboard|analytics|reporting|kpi|experiment/
+      };
+
+      if (resume.length < 500) risks.push({ level: "medium", title: "Resume may be too short", note: "Longer role evidence can improve keyword coverage and credibility." });
+      if (missing.length > 16) risks.push({ level: "high", title: "High keyword gap count", note: "Many priority terms from the job description are still missing." });
+      if (!yearsMentioned) risks.push({ level: "medium", title: "Experience length is unclear", note: "Adding years of experience can strengthen role alignment." });
+      if ((lowerResume.match(/\b(responsible for|helped with|worked on|involved in|assisted with)\b/g) || []).length >= 2) {
+        risks.push({ level: "medium", title: "Impact language could be stronger", note: "Swap weak phrases for sharper action verbs and outcomes." });
+      }
+      if (([...strongActionVerbs].filter((verb) => lowerResume.includes(verb)).length) < 4) {
+        risks.push({ level: "medium", title: "Action verbs are limited", note: "Use stronger delivery verbs to make achievements more convincing." });
+      }
+      if (roleKeywordMap[roleFamily] && !roleKeywordMap[roleFamily].test(lowerResume)) {
+        risks.push({ level: "high", title: "Role title alignment is weak", note: "The resume does not clearly mirror the role family language." });
+      }
+      if (sectionAnalysis.some((section) => section.score < 30)) {
+        risks.push({ level: "low", title: "One or more sections are underused", note: "A low-scoring section could be expanded with more role-specific detail." });
+      }
+      if (!risks.length) risks.push({ level: "low", title: "No major fit risks found", note: "The current content looks balanced for this role." });
+      return risks.slice(0, 5);
+    }
+
+    function buildExperienceSignals(resume) {
+      const lower = resume.toLowerCase();
+      return [
+        { title: "Years Mentioned", detail: /(\d+)\+?\s+years?/.exec(lower)?.[0] || "Not explicit", note: "Clear experience length helps recruiters scan faster." },
+        { title: "Leadership Evidence", detail: /(lead|mentor|managed|owned)/.test(lower) ? "Present" : "Limited", note: "Leadership language strengthens senior-role credibility." },
+        { title: "Tooling / Cloud", detail: /(aws|azure|gcp|docker|kubernetes|terraform|cicd)/.test(lower) ? "Present" : "Limited", note: "Tooling signals help technical screening." },
+        { title: "Stakeholder Collaboration", detail: /(stakeholder|collaborat|partnered|cross-functional)/.test(lower) ? "Present" : "Limited", note: "Cross-functional evidence supports product-facing roles." }
+      ];
+    }
+
+    function buildImprovementSuggestions(missing, sectionAnalysis) {
+      return missing.slice(0, 8).map((item, index) => {
+        const targetSection = sectionAnalysis[index % Math.max(sectionAnalysis.length, 1)]?.name || "Summary";
+        return {
+          term: item.term,
+          weight: item.weight,
+          reason: `Place this in ${targetSection} with a clear example or measurable outcome.`
+        };
+      });
+    }
+
+    function getHistory() {
+      try {
+        return JSON.parse(safeStorage.getItem(HISTORY_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function setHistory(items) {
+      safeStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      if (!history.length) {
+        elements.historyContainer.innerHTML = `<div class="history-empty">No saved sessions yet.</div>`;
+        return;
+      }
+      elements.historyContainer.innerHTML = history.map((item, index) => `
+        <button class="history-item" type="button" data-history-index="${index}">
+          <strong>${escapeHtml(item.label)}</strong>
+          <span>${escapeHtml(item.roleFamily)} | ${item.score.toFixed(1)}% | ${escapeHtml(item.savedAt)}</span>
+        </button>
+      `).join("");
+    }
+
+    function updateActionStates() {
+      const hasResults = Boolean(lastAnalysis);
+      elements.copy.disabled = !hasResults;
+      elements.export.disabled = !hasResults;
+
+      elements.copy.title = hasResults ? "Copy current summary" : "Run Analyze Match first";
+      elements.export.title = hasResults ? "Export current summary" : "Run Analyze Match first";
+    }
+
+    function saveCurrentSessionToHistory(analysis) {
+      const history = getHistory();
+      const item = {
+        label: `${detectRoleFamily(elements.jd.value)} Session`,
+        roleFamily: detectRoleFamily(elements.jd.value),
+        score: analysis.score,
+        savedAt: new Date().toLocaleString(),
+        jd: elements.jd.value,
+        resume: elements.resume.value
+      };
+      const deduped = history.filter((entry) => !(entry.jd === item.jd && entry.resume === item.resume));
+      const next = [item, ...deduped].slice(0, 8);
+      setHistory(next);
+      renderHistory();
+    }
+
+    function clearHistory() {
+      safeStorage.removeItem(HISTORY_KEY);
+      renderHistory();
+      elements.status.textContent = "Recent session history cleared.";
+    }
+
+    function loadHistoryItem(index) {
+      const history = getHistory();
+      const item = history[index];
+      if (!item) return;
+      elements.jd.value = item.jd;
+      elements.resume.value = item.resume;
+      setResumeUploadMeta("No file selected", false);
+      updateCounts();
+      autoResizeEditors();
+      runAnalysis(true);
+      elements.status.textContent = `${item.label} restored.`;
+    }
+
+    function performAnalysis(jd, resume) {
+      const jdTokens = preprocessText(jd);
+      const resumeTokens = preprocessText(resume);
+      const jdTF = calculateTermFrequency(jdTokens);
+      const resumeTF = calculateTermFrequency(resumeTokens);
+      const weights = buildImportanceWeights(jdTokens, jdTF);
+
+      let possibleScore = 0;
+      let earnedScore = 0;
+      const highMatch = [];
+      const partialMatch = [];
+      const missing = [];
+      const matchedTerms = new Set();
+      const partialTerms = new Set();
+
+      weights.forEach((meta, jdTerm) => {
+        possibleScore += meta.weight;
+        const resumeCount = resumeTF.get(jdTerm) || 0;
+
+        if (resumeCount > 0) {
+          highMatch.push({ term: meta.display, weight: meta.weight });
+          earnedScore += meta.weight;
+          matchedTerms.add(jdTerm);
+          return;
+        }
+
+        let bestPartial = null;
+        resumeTF.forEach((_, resumeTerm) => {
+          const similarity = similarityRatio(jdTerm, resumeTerm);
+          if (similarity >= 0.6) {
+            const partialScore = meta.weight * similarity * 0.62;
+            if (!bestPartial || partialScore > bestPartial.score) {
+              bestPartial = { term: meta.display, resumeTerm, weight: meta.weight, score: partialScore };
+            }
+          }
+        });
+
+        if (bestPartial) {
+          partialMatch.push(bestPartial);
+          earnedScore += bestPartial.score;
+          partialTerms.add(bestPartial.resumeTerm);
+        } else {
+          missing.push({ term: meta.display, weight: meta.weight });
+        }
+      });
+
+      const score = possibleScore ? clamp((earnedScore / possibleScore) * 100, 0, 100) : 0;
+      const topKeywords = [...weights.values()]
+        .map((item) => ({ term: item.display, weight: item.weight }))
+        .sort((a, b) => b.weight - a.weight);
+
+      const roleFamily = detectRoleFamily(jd);
+      const sectionAnalysis = buildSectionAnalysis(resume, weights, missing);
+      const keywordCategories = buildKeywordCategories(topKeywords, missing, highMatch);
+      const jdInsights = buildJdInsights(jd, topKeywords, missing);
+      const atsRisks = buildRiskReport(jd, resume, missing, highMatch, sectionAnalysis);
+      const experienceSignals = buildExperienceSignals(resume);
+      const suggestions = buildImprovementSuggestions(missing, sectionAnalysis);
+
+      return {
+        score,
+        confidence: getConfidence(score).label,
+        roleFamily,
+        highMatch: highMatch.sort((a, b) => b.weight - a.weight),
+        partialMatch: partialMatch.sort((a, b) => b.weight - a.weight),
+        missing: missing.sort((a, b) => b.weight - a.weight),
+        topKeywords,
+        keywordCategories,
+        jdInsights,
+        atsRisks,
+        sectionAnalysis,
+        experienceSignals,
+        suggestions,
+        stats: {
+          highCount: highMatch.length,
+          partialCount: partialMatch.length,
+          missingCount: missing.length
+        },
+        summary: buildSummary(score, missing, topKeywords, sectionAnalysis, atsRisks, roleFamily),
+        highlightedResumeHtml: highlightResume(resume, matchedTerms, partialTerms)
+      };
+    }
+
+    function renderResults(analysis) {
+      elements.results.innerHTML = `
+        <div class="dashboard dashboard-stack">
+          <div class="score-grid motion-enter" id="scoreSnapshotSection">
+            <div class="score-card">
+              <div class="score-ring" style="--angle:${(analysis.score / 100) * 360}deg;">
+                <div class="score-ring-inner">
+                  <strong>${analysis.score.toFixed(1)}%</strong>
+                  <span>Match Score</span>
+                </div>
+              </div>
+              <div class="confidence-pill">${analysis.confidence}</div>
+            </div>
+            <div class="info-card">
+              <div class="metrics">
+                <div class="metric"><strong>${analysis.stats.highCount}</strong><span>Strong matches</span></div>
+                <div class="metric"><strong>${analysis.stats.partialCount}</strong><span>Near matches</span></div>
+                <div class="metric"><strong>${analysis.stats.missingCount}</strong><span>Missing terms</span></div>
+              </div>
+              ${analysis.comparison ? `
+                <div class="compare-banner" style="margin-top:18px;">
+                  <strong>Comparison vs saved baseline</strong>
+                  <span>
+                    ${analysis.comparison.deltaScore >= 0 ? "Up" : "Down"} ${Math.abs(analysis.comparison.deltaScore).toFixed(1)} points against ${escapeHtml(analysis.comparison.baselineLabel)}.
+                    High matches ${analysis.comparison.deltaHigh >= 0 ? "increased" : "decreased"} by ${Math.abs(analysis.comparison.deltaHigh)} and missing keywords ${analysis.comparison.deltaMissing <= 0 ? "dropped" : "rose"} by ${Math.abs(analysis.comparison.deltaMissing)}.
+                  </span>
+                </div>
+              ` : ""}
+              <div class="tag-groups" style="margin-top:18px;">
+                <div class="tag-group">
+                  <h4>Suggestions</h4>
+                  <div class="suggestions-list">
+                    ${analysis.suggestions.length ? analysis.suggestions.map((item) => `
+                      <div class="suggestion-item">
+                        <div><strong>${escapeHtml(item.term)}</strong><span>${escapeHtml(item.reason)}</span></div>
+                        <div class="badge">+${Math.round(item.weight)}</div>
+                      </div>
+                    `).join("") : `
+                      <div class="suggestion-item">
+                        <div><strong>Resume looks aligned</strong><span>No major content gaps were found in this pass.</span></div>
+                        <div class="badge">Good</div>
+                      </div>
+                    `}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="deep-grid motion-enter">
+            <div class="keywords-card">
+              <h4>Resume Sections</h4>
+              <div class="section-grid">
+                ${analysis.sectionAnalysis.map((section) => `
+                  <div class="section-card">
+                    <div class="score-line">
+                      <strong>${escapeHtml(section.name)}</strong>
+                      <span class="pill-score">${section.score.toFixed(0)}%</span>
+                    </div>
+                    <div class="section-bar"><span style="width:${section.score}%;"></span></div>
+                    <em>${escapeHtml(section.suggestion)}</em>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+            <div class="keywords-card">
+              <h4>Keyword Categories</h4>
+              <div class="category-list">
+                ${analysis.keywordCategories.map((category) => `
+                  <div class="category-row">
+                    <div>
+                      <strong>${escapeHtml(category.label)}</strong>
+                      <em>${escapeHtml(category.top.join(", ")) || "No strong examples yet."}</em>
+                    </div>
+                    <div class="pill-score">${category.coverage}%</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-grid motion-enter">
+            <div class="keywords-card">
+              <h4>Job Description Insights</h4>
+              <div class="insight-list">
+                ${analysis.jdInsights.map((item) => `
+                  <div class="insight-item">
+                    <div>
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <em>${escapeHtml(item.detail)}. ${escapeHtml(item.note)}</em>
+                    </div>
+                    <div class="pill-score">${escapeHtml(item.title.split(" ")[0])}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+            <div class="keywords-card">
+              <h4>ATS Risks</h4>
+              <div class="risk-list">
+                ${analysis.atsRisks.map((risk) => `
+                  <div class="risk-item">
+                    <div>
+                      <strong>${escapeHtml(risk.title)}</strong>
+                      <em>${escapeHtml(risk.note)}</em>
+                    </div>
+                    <div class="risk-pill ${risk.level}">${escapeHtml(risk.level)}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown-grid motion-enter">
+            <div class="keywords-card">
+              <h4>Skill Match Breakdown</h4>
+              <div class="tag-groups">
+                <div class="tag-group">
+                  <h4>High Match Keywords</h4>
+                  <div class="tags">${createTags(analysis.highMatch.slice(0,14), "high", item => item.term)}</div>
+                </div>
+                <div class="tag-group">
+                  <h4>Partial Match Keywords</h4>
+                  <div class="tags">${createTags(analysis.partialMatch.slice(0,12), "partial", item => `${item.term} ~ ${item.resumeTerm}`)}</div>
+                </div>
+                <div class="tag-group">
+                  <h4>Missing Keywords</h4>
+                  <div class="tags">${createTags(analysis.missing.slice(0,12), "missing", item => item.term)}</div>
+                </div>
+              </div>
+            </div>
+            <div class="keywords-card">
+              <h4>Keyword Importance</h4>
+              <div class="importance-list">
+                ${analysis.topKeywords.slice(0,10).map((item, index) => `
+                  <div class="importance-item">
+                    <div><strong>${index + 1}. ${escapeHtml(item.term)}</strong><span>Weighted by rarity, technical depth, and JD prominence</span></div>
+                    <div class="badge">${Math.round(item.weight)}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="deep-grid motion-enter">
+            <div class="keywords-card">
+              <h4>Experience Alignment</h4>
+              <div class="compare-list">
+                ${analysis.experienceSignals.map((item) => `
+                  <div class="compare-item">
+                    <div>
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <em>${escapeHtml(item.note)}</em>
+                    </div>
+                    <div class="pill-score">${escapeHtml(item.detail)}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+            <div class="keywords-card motion-enter">
+              <h4>Text Summary</h4>
+              <div class="resume-preview">${escapeHtml(analysis.summary)}</div>
+            </div>
+          </div>
+
+          <div class="resume-card motion-enter">
+            <h4>Resume Match Highlighting</h4>
+            <div class="resume-preview">${analysis.highlightedResumeHtml}</div>
+          </div>
+        </div>
+      `;
+      revealMotionElements(elements.results);
+    }
+
+    function createTags(items, type, formatter) {
+      if (!items.length) return `<div class="tag">No items yet</div>`;
+      return items.map((item) => `<div class="tag ${type}">${escapeHtml(formatter(item))}<strong>${Math.round(item.weight)}</strong></div>`).join("");
+    }
+
+    function showEmptyState() {
+      elements.results.innerHTML = `
+        <div class="empty-state motion-enter">
+          Add a role and a resume to view your results.
+        </div>
+      `;
+      revealMotionElements(elements.results);
+    }
+
+    function updateCounts() {
+      elements.jdCount.textContent = `${elements.jd.value.length} chars`;
+      elements.resumeCount.textContent = `${elements.resume.value.length} chars`;
+    }
+
+    function revealMotionElements(scope = document) {
+      scope.querySelectorAll(".motion-enter").forEach((element) => {
+        const rect = element.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.92) {
+          requestAnimationFrame(() => element.classList.add("is-visible"));
+        } else if (motionObserver) {
+          motionObserver.observe(element);
+        }
+      });
+    }
+
+    function initMotionObserver() {
+      motionObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            motionObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+
+      revealMotionElements(document);
+    }
+
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = "auto";
+      const minHeight = window.innerWidth <= 860 ? 260 : 320;
+      textarea.style.height = `${Math.max(textarea.scrollHeight, minHeight)}px`;
+    }
+
+    function autoResizeEditors() {
+      autoResizeTextarea(elements.jd);
+      autoResizeTextarea(elements.resume);
+    }
+
+    function setResumeUploadMeta(message, hasFile = false) {
+      elements.resumeUploadMeta.textContent = message;
+      elements.resumeUploadMeta.classList.toggle("has-file", hasFile);
+    }
+
+    async function extractPdfText(file) {
+      if (!window.pdfjsLib) {
+        throw new Error("PDF reader unavailable");
+      }
+
+      const buffer = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: buffer }).promise;
+      const pages = [];
+
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        const pageText = content.items.map((item) => item.str).join(" ").replace(/\s+/g, " ").trim();
+        if (pageText) pages.push(pageText);
+      }
+
+      return pages.join("\n\n");
+    }
+
+    // Drag and drop functionality
+    function setupDragAndDrop() {
+      const editorShell = document.getElementById('resumeEditorShell');
+      const dragHint = document.getElementById('dragHint');
+      const resumeUploadBtn = document.getElementById('resumeUploadBtn');
+      const resumePdfInput = document.getElementById('resumePdfInput');
+
+      if (!editorShell || !dragHint) return;
+
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        editorShell.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Highlight drop zone when dragging over
+      ['dragenter', 'dragover'].forEach(eventName => {
+        editorShell.addEventListener(eventName, () => {
+          editorShell.classList.add('drag-over');
+          dragHint.setAttribute('aria-hidden', 'false');
+        }, false);
+      });
+
+      // Remove highlight when leaving
+      ['dragleave', 'drop'].forEach(eventName => {
+        editorShell.addEventListener(eventName, () => {
+          editorShell.classList.remove('drag-over');
+          dragHint.setAttribute('aria-hidden', 'true');
+        }, false);
+      });
+
+      // Handle dropped files
+      editorShell.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length === 0) return;
+
+        const file = files[0];
+        if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+          setResumeUploadMeta('Please drop a PDF file', false);
+          elements.status.textContent = 'Only PDF files are supported';
+          return;
+        }
+
+        // Simulate file input selection
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        resumePdfInput.files = dataTransfer.files;
+        
+        // Trigger file upload handler
+        const event = new Event('change', { bubbles: true });
+        resumePdfInput.dispatchEvent(event);
+        
+        // Visual feedback
+        resumeUploadBtn.classList.add('loading');
+        setTimeout(() => {
+          resumeUploadBtn.classList.remove('loading');
+        }, 1000);
+      }, false);
+
+      // Keyboard accessibility for upload button
+      resumeUploadBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          resumePdfInput.click();
+        }
+      });
+
+      // Focus styling for accessibility
+      resumeUploadBtn.addEventListener('focus', () => {
+        resumeUploadBtn.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 59, 130, 246), 0.4)';
+      });
+      resumeUploadBtn.addEventListener('blur', () => {
+        resumeUploadBtn.style.boxShadow = '';
+      });
+    }
+
+    async function handleResumeUpload(event) {
+      const [file] = event.target.files || [];
+      if (!file) return;
+
+      setResumeUploadMeta("Reading PDF...", true);
+      elements.status.textContent = "Importing resume PDF...";
+
+      try {
+        const extractedText = await extractPdfText(file);
+
+        if (!extractedText.trim()) {
+          throw new Error("No readable text found");
+        }
+
+        elements.resume.value = extractedText;
+        setResumeUploadMeta(file.name, true);
+        updateCounts();
+        autoResizeEditors();
+        lastAnalysis = null;
+        showEmptyState();
+        elements.status.textContent = `${file.name} imported. Click Analyze Match to view results.`;
+      } catch {
+        setResumeUploadMeta("Could not read this PDF", false);
+        elements.status.textContent = "This PDF could not be imported.";
+      } finally {
+        elements.resumePdfInput.value = "";
+      }
+    }
+
+    function runAnalysis(silent = false) {
+      const jd = elements.jd.value.trim();
+      const resume = elements.resume.value.trim();
+
+      if (!jd || !resume) {
+        lastAnalysis = null;
+        updateActionStates();
+        elements.status.textContent = "Add both a job description and a resume to run the analysis.";
+        showEmptyState();
+        return;
+      }
+
+      elements.loader.classList.add("visible");
+      elements.status.textContent = "Refreshing your results...";
+      setTimeout(() => {
+        lastAnalysis = performAnalysis(jd, resume);
+        renderResults(lastAnalysis);
+        saveCurrentSessionToHistory(lastAnalysis);
+        renderSnapshotSummary();
+        updateActionStates();
+        elements.loader.classList.remove("visible");
+        elements.status.textContent = `Analysis complete. Match score: ${lastAnalysis.score.toFixed(1)}% with ${lastAnalysis.confidence.toLowerCase()} confidence.`;
+      }, 900);
+    }
+
+    function handleDraftChange() {
+      updateCounts();
+      autoResizeEditors();
+      clearTimeout(liveAnalysisTimeout);
+      lastAnalysis = null;
+      updateActionStates();
+      showEmptyState();
+
+      if (!elements.jd.value.trim() || !elements.resume.value.trim()) {
+        elements.status.textContent = "Add both a job description and a resume to run the analysis.";
+        return;
+      }
+
+      elements.status.textContent = "Content updated. Click Analyze Match to view results.";
+    }
+
+    function loadDemo(featuredOnly = false) {
+      let nextIndex;
+      if (featuredOnly || lastDemoIndex === -1) {
+        nextIndex = demoScenarios.findIndex((scenario) => scenario.featured);
+        if (nextIndex === -1) nextIndex = 0;
+      } else {
+        nextIndex = Math.floor(Math.random() * demoScenarios.length);
+        while (demoScenarios.length > 1 && nextIndex === lastDemoIndex) {
+          nextIndex = Math.floor(Math.random() * demoScenarios.length);
+        }
+      }
+      lastDemoIndex = nextIndex;
+      const selectedDemo = demoScenarios[nextIndex];
+      elements.jd.value = selectedDemo.jobDescription;
+      elements.resume.value = selectedDemo.resume;
+      setResumeUploadMeta("No file selected", false);
+      updateCounts();
+      autoResizeEditors();
+      lastAnalysis = null;
+      updateActionStates();
+      showEmptyState();
+      elements.status.textContent = `${selectedDemo.label} loaded. Click Analyze Match to view results.`;
+    }
+
+    function clearAll() {
+      elements.jd.value = "";
+      elements.resume.value = "";
+      setResumeUploadMeta("No file selected", false);
+      updateCounts();
+      autoResizeEditors();
+      lastAnalysis = null;
+      updateActionStates();
+      clearTimeout(liveAnalysisTimeout);
+      showEmptyState();
+      elements.status.textContent = "Cleared. Ready for a new analysis.";
+    }
+
+    async function copyResults() {
+      if (!lastAnalysis) {
+        elements.status.textContent = "Generate results first, then copy the summary.";
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(lastAnalysis.summary);
+        elements.status.textContent = "Results summary copied to clipboard.";
+      } catch {
+        elements.status.textContent = "Clipboard access failed in this browser context.";
+      }
+    }
+
+    function exportResults() {
+      if (!lastAnalysis) {
+        elements.status.textContent = "Generate results first, then export the summary.";
+        return;
+      }
+      const blob = new Blob([lastAnalysis.summary], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "matchly-summary.txt";
+      link.click();
+      URL.revokeObjectURL(url);
+      elements.status.textContent = "Text summary exported.";
+    }
+
+    function saveSnapshot() {
+      if (!lastAnalysis) {
+        elements.status.textContent = "Generate results first, then save a snapshot.";
+        return;
+      }
+      // Simple implementation: save to history with a special label
+      const history = getHistory();
+      const item = {
+        label: `Snapshot ${new Date().toLocaleTimeString()}`,
+        roleFamily: lastAnalysis.roleFamily,
+        score: lastAnalysis.score,
+        savedAt: new Date().toLocaleString(),
+        jd: elements.jd.value,
+        resume: elements.resume.value
+      };
+      const deduped = history.filter((entry) => !(entry.jd === item.jd && entry.resume === item.resume));
+      const next = [item, ...deduped].slice(0, 12);
+      setHistory(next);
+      renderHistory();
+      elements.status.textContent = "Snapshot saved to history.";
+    }
+
+    function renderSnapshotSummary() {
+      // This function could render a summary of snapshots, but for now just ensure no errors
+      // Placeholder: update a hidden element or do nothing
+      const snapshotSection = document.getElementById('scoreSnapshotSection');
+      if (snapshotSection) {
+        // Optionally add some dynamic content
+        snapshotSection.setAttribute('data-snapshot', 'ready');
+      }
+    }
+
+    function initTheme() {
+      const saved = safeStorage.getItem("matchly-theme");
+      if (saved === "dark") document.body.classList.add("dark");
+      updateThemeToggleLabel();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      safeStorage.setItem("matchly-theme", document.body.classList.contains("dark") ? "dark" : "light");
+      updateThemeToggleLabel();
+    }
+
+    function updateThemeToggleLabel() {
+      elements.themeToggle.textContent = document.body.classList.contains("dark") ? "Light Mode" : "Dark Mode";
+    }
+
+    function initEditorResize() {
+      document.querySelectorAll(".resize-grip").forEach((grip) => {
+        const targetId = grip.getAttribute("data-target");
+        const textarea = document.getElementById(targetId);
+        grip.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          const startY = event.clientY;
+          const startHeight = textarea.getBoundingClientRect().height;
+
+          const onMove = (moveEvent) => {
+            const nextHeight = Math.max(220, startHeight + (moveEvent.clientY - startY));
+            textarea.style.height = `${nextHeight}px`;
+          };
+
+          const stopMove = () => {
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", stopMove);
+          };
+
+          window.addEventListener("pointermove", onMove);
+          window.addEventListener("pointerup", stopMove);
+        });
+      });
+    }
+
+    function jumpToWorkspace() {
+      elements.workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+      elements.jd.focus();
+    }
+
+    elements.themeToggle.addEventListener("click", toggleTheme);
+    elements.analyze.addEventListener("click", () => runAnalysis(false));
+    elements.demo.addEventListener("click", () => loadDemo(false));
+    elements.saveSnapshot.addEventListener("click", saveSnapshot);
+    elements.clear.addEventListener("click", clearAll);
+    elements.clearHistory.addEventListener("click", clearHistory);
+    elements.copy.addEventListener("click", copyResults);
+    elements.export.addEventListener("click", exportResults);
+    elements.resumeUploadBtn.addEventListener("click", () => elements.resumePdfInput.click());
+    elements.resumePdfInput.addEventListener("change", handleResumeUpload);
+    elements.historyContainer.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-history-index]");
+      if (!target) return;
+      loadHistoryItem(Number(target.getAttribute("data-history-index")));
+    });
+    elements.heroAnalyzeBtn.addEventListener("click", jumpToWorkspace);
+    elements.heroDemoBtn.addEventListener("click", () => loadDemo(true));
+    elements.jd.addEventListener("input", () => { autoResizeTextarea(elements.jd); handleDraftChange(); });
+    elements.resume.addEventListener("input", () => { autoResizeTextarea(elements.resume); handleDraftChange(); });
+    window.addEventListener("resize", autoResizeEditors);
+
+    // Initialize drag and drop functionality
+    setupDragAndDrop();
+
+    initTheme();
+    initEditorResize();
+    initMotionObserver();
+    renderHistory();
+    renderSnapshotSummary();
+    updateCounts();
+    autoResizeEditors();
+    updateActionStates();
+    showEmptyState();
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,35 @@
+{
+  "name": "resume-matcher",
+  "version": "1.0.0",
+  "description": "A web application for matching resumes with job descriptions",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s . -p 3000",
+    "dev": "serve -s . -p 3000",
+    "build": "echo 'No build step required for static site'",
+    "test": "echo 'No tests defined'",
+    "lint": "echo 'No linting configured'",
+    "docker:build": "docker build -t resume-matcher .",
+    "docker:run": "docker run -p 3000:80 resume-matcher",
+    "docker:compose": "docker-compose up"
+  },
+  "keywords": [
+    "resume",
+    "matcher",
+    "ats",
+    "recruitment",
+    "job-matching"
+  ],
+  "author": "Resume Matcher Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muhammadhammad2005/Matchly.git"
+  }
+}
