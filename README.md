@@ -1,11 +1,11 @@
-# Matchly - AI Resume Matcher
+# ResumeMatcherAI - AI Resume Matcher
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/muhammadhammad2005/Matchly)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/muhammadhammad2005/ResumeMatcherAI)
 
-Matchly is a modern web application that uses AI-powered analysis to match resumes with job descriptions. It provides detailed insights, keyword matching, and improvement suggestions for job applicants.
+ResumeMatcherAI is a modern web application that uses AI-powered analysis to match resumes with job descriptions. It provides detailed insights, keyword matching, and improvement suggestions for job applicants.
 
 ## 🚀 Live Demo
-Deployed on Vercel: [https://matchly.vercel.app](https://matchly.vercel.app)
+Deployed on Vercel: [https://resumematcherai.vercel.app](https://resumematcherai.vercel.app)
 
 ## ✨ Features
 
@@ -52,7 +52,7 @@ Deployed on Vercel: [https://matchly.vercel.app](https://matchly.vercel.app)
 ## 📁 Project Structure
 
 ```
-Matchly/
+ResumeMatcherAI/
 ├── index.html              # Main application (HTML, CSS, JavaScript)
 ├── logo/                   # Brand logos and icons
 ├── package.json           # Project configuration and dependencies
@@ -68,7 +68,7 @@ Matchly/
 
 ## 🐳 Docker Deployment
 
-Matchly is fully containerized and can be deployed using Docker.
+ResumeMatcherAI is fully containerized and can be deployed using Docker.
 
 ### Running with Docker Compose
 
@@ -90,10 +90,10 @@ docker-compose down
 
 ```bash
 # Build the Docker image
-docker build -t matchly-resume-matcher .
+docker build -t resumematcherai-resume-matcher .
 
 # Run the container
-docker run -p 8080:8080 --name matchly matchly-resume-matcher
+docker run -p 8080:8080 --name resumematcherai resumematcherai-resume-matcher
 
 # Access the application at http://localhost:8080
 ```
@@ -184,8 +184,8 @@ Click the "Deploy with Vercel" button above. No configuration needed!
 ### Option 3: Local Development
 ```bash
 # Clone repository
-git clone https://github.com/muhammadhammad2005/Matchly.git
-cd Matchly
+git clone https://github.com/muhammadhammad2005/ResumeMatcherAI.git
+cd ResumeMatcherAI
 
 # Install dependencies
 npm install
@@ -298,7 +298,7 @@ npm start
 - Check console for errors (F12 → Console)
 
 ### Getting Help
-1. Check existing [GitHub Issues](https://github.com/muhammadhammad2005/Matchly/issues)
+1. Check existing [GitHub Issues](https://github.com/muhammadhammad2005/ResumeMatcherAI/issues)
 2. Create a new issue with detailed description
 3. Include browser version and steps to reproduce
 
@@ -318,10 +318,10 @@ MIT License - see LICENSE file for details
 
 ## 📞 Contact
 
-**Repository**: https://github.com/muhammadhammad2005/Matchly  
-**Live Demo**: https://matchly.vercel.app  
-**Issues**: https://github.com/muhammadhammad2005/Matchly/issues
+**Repository**: https://github.com/muhammadhammad2005/ResumeMatcherAI
+**Live Demo**: https://resumematcherai.vercel.app
+**Issues**: https://github.com/muhammadhammad2005/ResumeMatcherAI/issues
 
 ---
 
-Built with ❤️ by the Matchly Team | Making job matching smarter and fairer
+Built with ❤️ by the ResumeMatcherAI Team | Making job matching smarter and fairer

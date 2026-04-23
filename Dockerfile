@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Matchly Resume Matcher
+# Multi-stage Dockerfile for ResumeMatcherAI Resume Matcher
 # Stage 1: Build stage
 FROM node:18-alpine AS builder
 

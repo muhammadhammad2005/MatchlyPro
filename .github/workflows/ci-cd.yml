@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # For your repository: muhammadhammad2005/Matchly
+  # For your repository: muhammadhammad2005/ResumeMatcherAI
 
 jobs:
   test:
@@ -152,7 +152,7 @@ jobs:
     - name: Run OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
       with:
-        project: 'Matchly'
+        project: 'ResumeMatcherAI'
         path: '.'
         format: 'SARIF'
         out: 'dependency-check-report.sarif'
