@@ -10,7 +10,8 @@ This project is part of my portfolio and showcases end-to-end ownership:
 - Docker containerization with Nginx
 - production deployment on Vercel
 - CI/CD automation with GitHub Actions
-- security checks with `npm audit` and Snyk
+- security checks with `npm audit`, gitleaks, and Snyk
+- release-based production promotion
 
 ## Live Project
 
@@ -36,10 +37,11 @@ This is not just a frontend page. It is a complete portfolio project where I han
 - built the tool myself
 - deployed it to Vercel myself
 - containerized it with Docker myself
-- configured production CI/CD myself
-- integrated security scanning and release gates myself
+- configured CI myself
+- configured release automation myself
+- controlled production promotion through tags/releases myself
 
-If you are reviewing this repository for hiring or portfolio purposes, the repo demonstrates practical ownership across development, deployment, and operations.
+If you are reviewing this repository for hiring or portfolio purposes, the repo demonstrates practical ownership across development, deployment, release management, and operations.
 
 ## Tech Stack
 
@@ -51,8 +53,10 @@ If you are reviewing this repository for hiring or portfolio purposes, the repo 
 - Docker
 - Docker Hub
 - GitHub Actions
+- GitHub Releases
 - Vercel
 - Snyk
+- gitleaks
 
 ## Application Highlights
 
@@ -62,7 +66,7 @@ If you are reviewing this repository for hiring or portfolio purposes, the repo 
 - weighted scoring logic
 - section-aware analysis
 - role-family insights
-- risk detection for weak resume coverage
+- ATS-oriented risk detection
 
 ### Frontend experience
 
@@ -71,7 +75,7 @@ If you are reviewing this repository for hiring or portfolio purposes, the repo 
 - drag-and-drop PDF upload
 - live character counters
 - session history using local storage
-- copy/export/save utilities
+- copy, export, and save utilities
 
 ### Privacy-first approach
 
@@ -80,31 +84,64 @@ If you are reviewing this repository for hiring or portfolio purposes, the repo 
 - no database
 - no user account requirement
 
-## DevOps And Production Setup
+## DevOps And Release Model
 
-The project includes a real CI/CD flow instead of a basic demo pipeline.
+The project uses a two-stage workflow that separates CI from production release.
 
-### Current pipeline
+### CI pipeline
 
-`Quality Gate -> Security Checks -> Docker Smoke Test -> Publish Container Images -> Deploy to Vercel Production -> Notification Stage`
+`Quality Gate -> Security Checks -> Docker Smoke Test -> Notification Stage`
 
-### What the pipeline does
+What CI does:
 
+- runs on branches and pull requests
 - installs dependencies with `npm ci`
 - validates project structure
 - runs static smoke checks
+- runs gitleaks
 - runs `npm audit`
 - runs a Snyk dependency scan
 - builds and smoke-tests the production Docker image
-- publishes container images to GHCR and Docker Hub
-- deploys to Vercel only after earlier gates succeed
-- sends a notification stage summary at the end
+
+### Release pipeline
+
+`Release Quality Gate -> Release Security Checks -> Release Docker Smoke Test -> Publish Release Images -> Deploy Release to Vercel Production -> Publish GitHub Release -> Release Notification Stage`
+
+What release does:
+
+- runs only when a version tag such as `v1.0.0` is pushed
+- publishes release images to GHCR and Docker Hub
+- deploys the tagged version to Vercel production
+- creates a GitHub Release entry automatically
 
 ### Deployment rule
 
 Vercel does not auto-deploy directly from Git pushes for this project.
 
-The repository uses CLI-based deployment after pipeline success, and `vercel.json` disables automatic Git deployments for tighter release control.
+The repository uses CLI-based deployment, and `vercel.json` disables automatic Git deployments for tighter release control.
+
+Normal pushes and pull requests never deploy production.
+
+Production deployment happens only when I create and push a version tag like `v1.0.0`.
+
+## Branch And Review Workflow
+
+The intended workflow is:
+
+1. Create a branch such as `feature/...`, `fix/...`, or `chore/...`
+2. Open a pull request into `main`
+3. Let CI pass
+4. Review the changes
+5. Merge into `main`
+6. Create a release tag when the version is ready for production
+
+Repo-side controls included here:
+
+- `.github/CODEOWNERS`
+- `.github/pull_request_template.md`
+- `CONTRIBUTING.md`
+
+For strict PR-only enforcement, GitHub branch protection should also be enabled in repository settings.
 
 ## Containerization
 
@@ -148,22 +185,39 @@ This runs:
 - project validation
 - static smoke testing
 
+## Release Usage
+
+To publish a real production release:
+
+```bash
+git checkout main
+git pull origin main
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+That tag will trigger the release workflow, publish the production deployment, and create the GitHub Release entry.
+
 ## Project Structure
 
 ```text
 .
+├─ .github/CODEOWNERS
+├─ .github/pull_request_template.md
 ├─ .github/workflows/ci-cd.yml
+├─ .github/workflows/release.yml
+├─ CONTRIBUTING.md
 ├─ Dockerfile
 ├─ docker-compose.yml
+├─ LICENSE
 ├─ nginx.conf
-├─ vercel.json
 ├─ package.json
+├─ vercel.json
 ├─ index.html
 ├─ health.html
-├─ scripts/
-│  ├─ smoke-static-site.mjs
-│  └─ validate-project.mjs
-└─ logo/
+└─ scripts/
+   ├─ smoke-static-site.mjs
+   └─ validate-project.mjs
 ```
 
 ## Vercel Note
@@ -183,10 +237,11 @@ Relevant references:
 This repository is in a strong portfolio-ready state for a static production app:
 
 - working production deployment
-- gated CI/CD pipeline
+- CI separated from release promotion
+- release-based production deployment
+- PR review ownership with CODEOWNERS
 - containerized runtime
 - security scanning integrated
-- release flow separated from direct Vercel Git auto-deploy
 - health checks for container and deployment verification
 - clean documentation for reviewers
 
@@ -195,18 +250,19 @@ This repository is in a strong portfolio-ready state for a static production app
 - there is no backend or persistent database because the tool is intentionally browser-first
 - screenshot availability inside Vercel dashboard is a platform-side generated-URL behavior, not an application outage
 - local Docker verification depends on Docker Engine being available on the machine running the checks
+- GitHub branch protection still needs to be enabled in repository settings for strict PR-only enforcement
 
 ## Future Improvements
 
 - custom domain
-- Lighthouse performance report badge
+- Lighthouse performance reporting
 - automated accessibility audit in CI
 - Playwright end-to-end tests
 - Dependabot for dependency maintenance
-- versioned releases and changelog
+- merge queue and stricter branch protection rules
 
 ## Author
 
 Muhammad Hammad
 
-Built, containerized, deployed, and automated by me as a portfolio project to demonstrate product engineering plus practical DevOps ownership.
+Built, containerized, deployed, released, and automated by me as a portfolio project to demonstrate product engineering plus practical DevOps ownership.

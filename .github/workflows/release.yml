@@ -1,0 +1,287 @@
+name: Production Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  NODE_VERSION: "20"
+  IMAGE_NAME: resume-matcher
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  release-quality:
+    name: Release Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout release code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate release build
+        run: npm run ci:validate
+
+  release-security:
+    name: Release Security Checks
+    runs-on: ubuntu-latest
+    needs: release-quality
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout release code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
+      - name: Run Snyk dependency scan
+        uses: snyk/actions/node@v1.0.0
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --severity-threshold=high --all-projects
+
+  release-docker-smoke:
+    name: Release Docker Smoke Test
+    runs-on: ubuntu-latest
+    needs:
+      - release-quality
+      - release-security
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout release code
+        uses: actions/checkout@v4
+
+      - name: Build production container
+        run: docker build --target production --tag resume-matcher:release .
+
+      - name: Run container
+        run: docker run -d --name resume-matcher-release -p 8080:8080 resume-matcher:release
+
+      - name: Verify container health endpoint
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://127.0.0.1:8080/health > /dev/null; then
+              echo "Release container health endpoint is reachable."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Release container health endpoint did not become ready in time."
+          docker logs resume-matcher-release
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f resume-matcher-release
+
+  docker-publish:
+    name: Publish Release Images
+    runs-on: ubuntu-latest
+    needs:
+      - release-docker-smoke
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout release code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY_IMAGE }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ github.ref_name }}
+            type=raw,value=latest
+
+      - name: Build and push multi-platform images
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-vercel:
+    name: Deploy Release to Vercel Production
+    runs-on: ubuntu-latest
+    needs:
+      - docker-publish
+    timeout-minutes: 15
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout release code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build Vercel output
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy prebuilt output
+        id: deploy
+        run: |
+          deployment_url="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "deployment_url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "Deployment URL: $deployment_url"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Verify production deployment
+        run: |
+          deployment_url="${{ steps.deploy.outputs.deployment_url }}"
+          vercel curl --deployment "$deployment_url" / --token=${{ secrets.VERCEL_TOKEN }} > /dev/null
+          vercel curl --deployment "$deployment_url" /health --token=${{ secrets.VERCEL_TOKEN }} > /dev/null
+
+  create-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-vercel
+    steps:
+      - name: Create GitHub release entry
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          name: ${{ github.ref_name }}
+          body: |
+            Production release for MatchlyPro.
+
+            Container images and Vercel production deployment were published successfully for this version.
+
+  notify:
+    name: Release Notification Stage
+    runs-on: ubuntu-latest
+    env:
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+    needs:
+      - release-quality
+      - release-security
+      - release-docker-smoke
+      - docker-publish
+      - deploy-vercel
+      - create-release
+    if: always()
+
+    steps:
+      - name: Compute release notification status
+        id: status
+        run: |
+          if [[ "${{ needs.release-quality.result }}" == "success" && \
+                "${{ needs.release-security.result }}" == "success" && \
+                "${{ needs.release-docker-smoke.result }}" == "success" && \
+                "${{ needs.docker-publish.result }}" == "success" && \
+                "${{ needs.deploy-vercel.result }}" == "success" && \
+                "${{ needs.create-release.result }}" == "success" ]]; then
+            echo "state=success" >> "$GITHUB_OUTPUT"
+            echo "message=Release pipeline completed successfully." >> "$GITHUB_OUTPUT"
+          else
+            echo "state=failure" >> "$GITHUB_OUTPUT"
+            echo "message=Release pipeline failed. Production promotion stopped." >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send release email notification
+        if: always() && env.SMTP_USER != '' && env.SMTP_PASS != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ env.SMTP_USER }}
+          password: ${{ env.SMTP_PASS }}
+          subject: "[${{ steps.status.outputs.state }}] ${{ github.repository }} release ${{ github.ref_name }}"
+          to: ${{ env.SMTP_USER }}
+          from: GitHub Actions <${{ env.SMTP_USER }}>
+          body: |
+            Repository: ${{ github.repository }}
+            Release Tag: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+
+            Release Quality Gate: ${{ needs.release-quality.result }}
+            Release Security Checks: ${{ needs.release-security.result }}
+            Release Docker Smoke Test: ${{ needs.release-docker-smoke.result }}
+            Publish Release Images: ${{ needs.docker-publish.result }}
+            Vercel Production Deploy: ${{ needs.deploy-vercel.result }}
+            GitHub Release Publish: ${{ needs.create-release.result }}
+
+            ${{ steps.status.outputs.message }}
+            Run URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

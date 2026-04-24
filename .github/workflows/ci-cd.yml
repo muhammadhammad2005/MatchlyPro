@@ -1,16 +1,24 @@
-name: Production CI/CD
+name: Continuous Integration
 
 on:
   push:
     branches:
       - main
+      - develop
+      - feature/**
+      - fix/**
+      - hotfix/**
+      - chore/**
+      - refactor/**
+    tags-ignore:
+      - "v*.*.*"
   pull_request:
     branches:
       - main
   workflow_dispatch:
 
 concurrency:
-  group: production-cicd-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -18,8 +26,6 @@ permissions:
 
 env:
   NODE_VERSION: "20"
-  IMAGE_NAME: resume-matcher
-  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
   quality:
@@ -74,6 +80,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run npm audit
         run: npm audit --audit-level=high
 
@@ -90,6 +101,7 @@ jobs:
         run: |
           echo "# Security Checks" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- gitleaks secret scan executed" >> "$GITHUB_STEP_SUMMARY"
           echo "- npm audit executed at high severity threshold" >> "$GITHUB_STEP_SUMMARY"
           echo "- Snyk dependency scan executed" >> "$GITHUB_STEP_SUMMARY"
 
@@ -128,132 +140,6 @@ jobs:
         if: always()
         run: docker rm -f resume-matcher-ci
 
-  docker-publish:
-    name: Publish Container Images
-    runs-on: ubuntu-latest
-    needs:
-      - docker-smoke
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Generate image metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY_IMAGE }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=sha-
-            type=ref,event=branch
-
-      - name: Build and push multi-platform images
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          target: production
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Container publish summary
-        if: always()
-        run: |
-          echo "# Container Publish" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- GHCR image: \`${{ env.REGISTRY_IMAGE }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Docker Hub image: \`${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Tags: ${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
-
-  deploy-vercel:
-    name: Deploy to Vercel Production
-    runs-on: ubuntu-latest
-    needs:
-      - quality
-      - security
-      - docker-publish
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    timeout-minutes: 15
-    environment:
-      name: production
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build Vercel output
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Deploy prebuilt output
-        id: deploy
-        run: |
-          deployment_url="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
-          echo "deployment_url=$deployment_url" >> "$GITHUB_OUTPUT"
-          echo "Deployment URL: $deployment_url"
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Verify production deployment
-        run: |
-          deployment_url="${{ steps.deploy.outputs.deployment_url }}"
-          vercel curl --deployment "$deployment_url" / --token=${{ secrets.VERCEL_TOKEN }} > /dev/null
-          vercel curl --deployment "$deployment_url" /health --token=${{ secrets.VERCEL_TOKEN }} > /dev/null
-
-      - name: Deployment summary
-        if: always()
-        run: |
-          echo "# Vercel Deployment" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Production URL: ${{ steps.deploy.outputs.deployment_url }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Deployment strategy: CLI prebuilt deploy after successful pipeline gates" >> "$GITHUB_STEP_SUMMARY"
-
   notify:
     name: Notification Stage
     runs-on: ubuntu-latest
@@ -264,8 +150,6 @@ jobs:
       - quality
       - security
       - docker-smoke
-      - docker-publish
-      - deploy-vercel
     if: always()
 
     steps:
@@ -274,14 +158,12 @@ jobs:
         run: |
           if [[ "${{ needs.quality.result }}" == "success" && \
                 "${{ needs.security.result }}" == "success" && \
-                "${{ needs.docker-smoke.result }}" == "success" && \
-                ( "${{ needs.docker-publish.result }}" == "success" || "${{ needs.docker-publish.result }}" == "skipped" ) && \
-                ( "${{ needs.deploy-vercel.result }}" == "success" || "${{ needs.deploy-vercel.result }}" == "skipped" ) ]]; then
+                "${{ needs.docker-smoke.result }}" == "success" ]]; then
             echo "state=success" >> "$GITHUB_OUTPUT"
-            echo "message=Pipeline completed successfully." >> "$GITHUB_OUTPUT"
+            echo "message=CI pipeline completed successfully. No production deployment was triggered." >> "$GITHUB_OUTPUT"
           else
             echo "state=failure" >> "$GITHUB_OUTPUT"
-            echo "message=Pipeline failed. Review the workflow logs before deploying again." >> "$GITHUB_OUTPUT"
+            echo "message=CI pipeline failed. Review the workflow logs before merging." >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send pipeline email notification
@@ -292,7 +174,7 @@ jobs:
           server_port: 587
           username: ${{ env.SMTP_USER }}
           password: ${{ env.SMTP_PASS }}
-          subject: "[${{ steps.status.outputs.state }}] ${{ github.repository }} CI/CD"
+          subject: "[${{ steps.status.outputs.state }}] ${{ github.repository }} CI"
           to: ${{ env.SMTP_USER }}
           from: GitHub Actions <${{ env.SMTP_USER }}>
           body: |
@@ -303,8 +185,6 @@ jobs:
             Quality Gate: ${{ needs.quality.result }}
             Security Checks: ${{ needs.security.result }}
             Docker Smoke Test: ${{ needs.docker-smoke.result }}
-            Docker Publish: ${{ needs.docker-publish.result }}
-            Vercel Deploy: ${{ needs.deploy-vercel.result }}
 
             ${{ steps.status.outputs.message }}
             Run URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -317,7 +197,5 @@ jobs:
           echo "- Quality Gate: ${{ needs.quality.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Security Checks: ${{ needs.security.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Docker Smoke Test: ${{ needs.docker-smoke.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Docker Publish: ${{ needs.docker-publish.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Vercel Deploy: ${{ needs.deploy-vercel.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "${{ steps.status.outputs.message }}" >> "$GITHUB_STEP_SUMMARY"
