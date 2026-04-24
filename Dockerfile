@@ -6,7 +6,6 @@ RUN apk add --no-cache curl
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY index.html /usr/share/nginx/html/index.html
 COPY health.html /usr/share/nginx/html/health.html
-COPY logo /usr/share/nginx/html/logo
 
 RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx/conf.d \
     && touch /var/run/nginx.pid \

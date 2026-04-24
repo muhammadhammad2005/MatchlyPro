@@ -5,6 +5,8 @@ const root = process.cwd();
 
 const requiredFiles = [
   ".github/workflows/ci-cd.yml",
+  ".github/workflows/release.yml",
+  ".github/CODEOWNERS",
   "Dockerfile",
   "nginx.conf",
   "package.json",
@@ -36,7 +38,8 @@ for (const file of requiredFiles) {
 
 const packageJson = readJson("package.json");
 const vercelConfig = readJson("vercel.json");
-const workflow = readText(".github/workflows/ci-cd.yml");
+const ciWorkflow = readText(".github/workflows/ci-cd.yml");
+const releaseWorkflow = readText(".github/workflows/release.yml");
 const indexHtml = readText("index.html");
 const healthHtml = readText("health.html");
 
@@ -49,11 +52,16 @@ assert(vercelConfig.git?.deploymentEnabled === false, "vercel.json must disable 
 assert(Array.isArray(vercelConfig.routes), "vercel.json must define routes for static hosting.");
 assert(vercelConfig.routes.some((route) => route.src === "/health"), "vercel.json must expose /health.");
 
-assert(workflow.includes("deploy-vercel"), "Workflow must include a deploy-vercel job.");
-assert(workflow.includes("docker-publish"), "Workflow must include a docker-publish job.");
-assert(workflow.includes("SNYK_TOKEN"), "Workflow must reference the SNYK token.");
-assert(workflow.includes("DOCKERHUB_USERNAME"), "Workflow must reference Docker Hub credentials.");
-assert(workflow.includes("vercel deploy --prebuilt --prod"), "Workflow must use prebuilt Vercel deployments.");
+assert(ciWorkflow.includes("Notification Stage"), "CI workflow must include a notification stage.");
+assert(ciWorkflow.includes("gitleaks"), "CI workflow must include gitleaks scanning.");
+assert(ciWorkflow.includes("SNYK_TOKEN"), "CI workflow must reference the SNYK token.");
+
+assert(releaseWorkflow.includes("docker-publish"), "Release workflow must include a docker-publish job.");
+assert(releaseWorkflow.includes("deploy-vercel"), "Release workflow must include a deploy-vercel job.");
+assert(releaseWorkflow.includes("softprops/action-gh-release"), "Release workflow must create a GitHub release.");
+assert(releaseWorkflow.includes("DOCKERHUB_USERNAME"), "Release workflow must reference Docker Hub credentials.");
+assert(releaseWorkflow.includes("vercel deploy --prebuilt --prod"), "Release workflow must use prebuilt Vercel deployments.");
+assert(releaseWorkflow.includes('v*.*.*'), "Release workflow must trigger from version tags.");
 
 assert(indexHtml.includes("<title>"), "index.html must contain a title tag.");
 assert(indexHtml.toLowerCase().includes("resume"), "index.html should still describe the resume matcher app.");
