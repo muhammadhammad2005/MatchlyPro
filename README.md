@@ -1,49 +1,45 @@
 # MatchlyPro
 
-MatchlyPro is a production-ready resume matcher web app that compares a resume against a job description, highlights keyword coverage, surfaces ATS risks, and gives actionable improvement suggestions.
+MatchlyPro is a production-oriented resume matcher web app that compares a resume against a job description, highlights keyword coverage, surfaces ATS risks, and suggests practical improvements.
 
-This project is part of my portfolio and showcases end-to-end ownership:
+This repository is designed as a portfolio project that shows both product engineering and delivery discipline:
 
-- product idea and implementation
-- UI/UX design in a single-page app
-- client-side PDF resume parsing with PDF.js
-- Docker containerization with Nginx
-- production deployment on Vercel
-- CI/CD automation with GitHub Actions
-- security checks with `npm audit`, gitleaks, and Snyk
-- release-based production promotion
+- product design and implementation
+- client-side PDF parsing with PDF.js
+- production-ready static hosting with Vercel
+- containerized runtime with Nginx and Docker
+- CI checks with GitHub Actions
+- release-gated production promotion
+- basic security scanning and smoke validation
 
 ## Live Project
 
 - Production app: [https://matchlypro.vercel.app](https://matchlypro.vercel.app)
 - Repository: [https://github.com/muhammadhammad2005/MatchlyPro](https://github.com/muhammadhammad2005/MatchlyPro)
 
+## Portfolio Positioning
+
+This is a strong portfolio example for:
+
+- frontend product engineering
+- shipping polished browser-based tools
+- practical CI/CD ownership
+- containerization and deployment workflows
+- release-based production control for a static app
+
+It is not a full multi-tenant SaaS yet because there is no backend, database, authentication, billing, or persistent user accounts. It is better described as a production-minded web product with DevOps discipline than as a complete SaaS platform.
+
 ## What The App Does
 
-- compares a job description and resume in real time
-- supports PDF resume upload and text extraction in the browser
+- compares a resume with a job description in real time
+- extracts text from uploaded PDF resumes in the browser
 - calculates an overall match score
 - groups results into strong, partial, and missing keywords
-- analyzes resume sections and experience signals
-- flags ATS-related risks
-- lets users copy, export, and save result snapshots locally
-- supports light and dark mode
+- flags ATS issues and resume risks
+- offers copy, export, and local save actions
 - works on desktop and mobile
 
-## Why This Project Matters
-
-This is not just a frontend page. It is a complete portfolio project where I handled both application delivery and DevOps:
-
-- built the tool myself
-- deployed it to Vercel myself
-- containerized it with Docker myself
-- configured CI myself
-- configured release automation myself
-- controlled production promotion through tags/releases myself
-
-If you are reviewing this repository for hiring or portfolio purposes, the repo demonstrates practical ownership across development, deployment, release management, and operations.
-
-## Tech Stack
+## Core Stack
 
 - HTML5
 - CSS3
@@ -51,121 +47,146 @@ If you are reviewing this repository for hiring or portfolio purposes, the repo 
 - PDF.js
 - Nginx
 - Docker
-- Docker Hub
 - GitHub Actions
 - GitHub Releases
 - Vercel
 - Snyk
 - gitleaks
 
-## Application Highlights
+## Production Architecture
 
-### Resume analysis engine
+```mermaid
+flowchart LR
+    U[User Browser] --> V[Vercel Production Deployment]
+    V --> S[Static Assets<br/>index.html + health.html]
+    S --> J[Browser App Logic]
+    J --> P[PDF.js Parsing In Browser]
+    J --> L[Local Storage Session History]
+```
 
-- keyword matching between job description and resume
-- weighted scoring logic
-- section-aware analysis
-- role-family insights
-- ATS-oriented risk detection
+## Delivery Architecture
 
-### Frontend experience
+```mermaid
+flowchart TD
+    D[Developer] --> B[Feature or Fix Branch]
+    B --> PR[Pull Request to main]
+    PR --> CI[CI Workflow]
+    CI --> M[Merge to main]
+    M --> R[Version Tag or Release Trigger]
+    R --> REL[Production Release Workflow]
+    REL --> V[Vercel Production]
+    REL --> I[Docker Images]
+```
 
+## How The App Works
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App as MatchlyPro App
+    participant PDF as PDF.js
+    User->>App: Paste job description
+    User->>App: Upload resume PDF
+    App->>PDF: Extract resume text
+    PDF-->>App: Parsed content
+    App-->>User: Match score, keyword gaps, ATS risks
+```
+
+## Key Engineering Highlights
+
+### Product experience
+
+- browser-first workflow with no account required
+- privacy-friendly resume analysis
 - responsive single-page interface
-- polished visual design
-- drag-and-drop PDF upload
-- live character counters
-- session history using local storage
-- copy, export, and save utilities
+- local history and export utilities
 
-### Privacy-first approach
+### Delivery discipline
 
-- no backend required for core matching
-- resume parsing happens in the browser
-- no database
-- no user account requirement
+- CI runs on branches, pull requests, and main
+- Docker smoke validation is part of CI
+- production deployment is separated from ordinary CI runs
+- Vercel Git auto-deploy is disabled for tighter release control
 
-## DevOps And Release Model
+### Security posture
 
-The project uses a two-stage workflow that separates CI from production release.
+- gitleaks scan for secret detection
+- `npm audit` at high severity threshold
+- Snyk dependency scanning
+- health endpoint verification in container checks
 
-### CI pipeline
+## CI Pipeline
+
+File: [.github/workflows/ci-cd.yml](</e:/Apps/Resume Matcher/.github/workflows/ci-cd.yml>)
+
+Pipeline stages:
 
 `Quality Gate -> Security Checks -> Docker Smoke Test -> Notification Stage`
 
-What CI does:
+CI runs on:
 
-- runs on branches and pull requests
-- installs dependencies with `npm ci`
-- validates project structure
-- runs static smoke checks
-- runs gitleaks
-- runs `npm audit`
-- runs a Snyk dependency scan
-- builds and smoke-tests the production Docker image
+- pushes to `main`
+- pushes to delivery branches such as `feature/**`, `fix/**`, `chore/**`
+- pull requests targeting `main`
+- manual workflow dispatch
 
-### Release pipeline
+CI does not deploy production.
+
+### CI flow
+
+```mermaid
+flowchart LR
+    Q[Quality Gate] --> S[Security Checks]
+    S --> D[Docker Smoke Test]
+    D --> N[Notification Stage]
+```
+
+## Release And Production Deployment
+
+File: [.github/workflows/release.yml](</e:/Apps/Resume Matcher/.github/workflows/release.yml>)
+
+Production release stages:
 
 `Release Quality Gate -> Release Security Checks -> Release Docker Smoke Test -> Publish Release Images -> Deploy Release to Vercel Production -> Publish GitHub Release -> Release Notification Stage`
 
-What release does:
+This release workflow is separated from routine CI so production is not updated by every merge.
 
-- runs only when a version tag such as `v1.0.0` is pushed
-- publishes release images to GHCR and Docker Hub
-- deploys the tagged version to Vercel production
-- creates a GitHub Release entry automatically
+### Release flow
 
-### Deployment rule
-
-Vercel does not auto-deploy directly from Git pushes for this project.
-
-The repository uses CLI-based deployment, and `vercel.json` disables automatic Git deployments for tighter release control.
-
-Normal pushes and pull requests never deploy production.
-
-Production deployment happens only when I create and push a version tag like `v1.0.0`.
-
-## Branch And Review Workflow
-
-The intended workflow is:
-
-1. Create a branch such as `feature/...`, `fix/...`, or `chore/...`
-2. Open a pull request into `main`
-3. Let CI pass
-4. Review the changes
-5. Merge into `main`
-6. Create a release tag when the version is ready for production
-
-Repo-side controls included here:
-
-- `.github/CODEOWNERS`
-- `.github/pull_request_template.md`
-- `CONTRIBUTING.md`
-
-For strict PR-only enforcement, GitHub branch protection should also be enabled in repository settings.
-
-## Containerization
-
-The app is containerized for production use with Nginx.
-
-### Docker features
-
-- lightweight `nginx:alpine` production image
-- custom Nginx config
-- health endpoint support
-- non-root runtime user
-- static asset caching
-- security headers
-
-### Run locally with Docker
-
-```bash
-docker build --target production -t resume-matcher .
-docker run --rm -p 8080:8080 resume-matcher
+```mermaid
+flowchart LR
+    T[Push Version Tag] --> RQ[Release Quality Gate]
+    RQ --> RS[Release Security Checks]
+    RS --> RD[Release Docker Smoke Test]
+    RD --> DP[Publish Docker Images]
+    DP --> VV[Deploy to Vercel Production]
+    VV --> GR[Create GitHub Release]
+    GR --> RN[Release Notification]
 ```
 
-Open `http://localhost:8080`
+## Open Source Release Safety
 
-### Run locally with Node
+This repository is public, but that does not mean random users can deploy production.
+
+Production deployment remains under maintainer control because:
+
+- only users with write access can push tags to the upstream repository
+- GitHub Actions secrets are only available in the main repository context
+- forks do not get access to production secrets like `VERCEL_TOKEN`
+- Vercel Git auto-deploy is disabled in [vercel.json](</e:/Apps/Resume Matcher/vercel.json>)
+
+In practical terms, someone can fork the repo and run their own copy, but they cannot deploy this repository's production environment without maintainer permissions and secrets.
+
+## Deployment Rules
+
+- normal pushes and pull requests run CI only
+- production deployment is promoted through the release workflow
+- Vercel production is deployed via CLI with repository secrets
+- Docker images are published as release artifacts
+
+## Local Development
+
+### Run with Node
 
 ```bash
 npm ci
@@ -174,20 +195,26 @@ npm start
 
 Open `http://localhost:3000`
 
+### Run with Docker
+
+```bash
+docker build --target production -t resume-matcher .
+docker run --rm -p 8080:8080 resume-matcher
+```
+
+Open `http://localhost:8080`
+
 ## Local Validation
 
 ```bash
 npm run ci:validate
 ```
 
-This runs:
-
-- project validation
-- static smoke testing
+This validates project structure and runs static smoke checks.
 
 ## Release Usage
 
-To publish a real production release:
+Current production promotion is tag-driven.
 
 ```bash
 git checkout main
@@ -196,73 +223,71 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-That tag will trigger the release workflow, publish the production deployment, and create the GitHub Release entry.
+That release tag triggers the production workflow, publishes release artifacts, and deploys the tagged version to Vercel production.
 
-## Project Structure
+## Operations Notes
+
+- `vercel.json` disables Git-based Vercel auto deployment
+- the app exposes `/health` for deployment verification
+- Docker runtime uses Nginx for static delivery
+- CI and release jobs depend on repository secrets for external integrations
+
+## Repository Structure
 
 ```text
 .
-├─ .github/CODEOWNERS
-├─ .github/pull_request_template.md
-├─ .github/workflows/ci-cd.yml
-├─ .github/workflows/release.yml
-├─ CONTRIBUTING.md
-├─ Dockerfile
-├─ docker-compose.yml
-├─ LICENSE
-├─ nginx.conf
-├─ package.json
-├─ vercel.json
-├─ index.html
-├─ health.html
-└─ scripts/
-   ├─ smoke-static-site.mjs
-   └─ validate-project.mjs
+|-- .github/
+|   |-- CODEOWNERS
+|   |-- pull_request_template.md
+|   `-- workflows/
+|       |-- ci-cd.yml
+|       `-- release.yml
+|-- scripts/
+|   |-- smoke-static-site.mjs
+|   `-- validate-project.mjs
+|-- CONTRIBUTING.md
+|-- Dockerfile
+|-- LICENSE
+|-- README.md
+|-- health.html
+|-- index.html
+|-- nginx.conf
+|-- package.json
+`-- vercel.json
 ```
-
-## Vercel Note
-
-If Vercel shows `No Screenshot Available` on the deployment overview, that usually does not mean the deployment is broken.
-
-In this project, the production deployment works, but the generated deployment URL can still be treated differently from the public production domain. Vercel's dashboard screenshot system uses generated deployment URLs, and protected or restricted generated URLs may fail screenshot capture even while the production domain is healthy.
-
-Relevant references:
-
-- Vercel generated URLs: https://vercel.com/docs/concepts/deployments/generated-urls
-- Vercel deployment protection: https://vercel.com/docs/security/deployment-protection
-- Similar community report: https://community.vercel.com/t/deployment-status-shows-error-due-to-authentication-redirect/7658
 
 ## Production Readiness Summary
 
-This repository is in a strong portfolio-ready state for a static production app:
+This repository is portfolio-ready for a production-minded web app because it includes:
 
-- working production deployment
-- CI separated from release promotion
-- release-based production deployment
-- PR review ownership with CODEOWNERS
-- containerized runtime
-- security scanning integrated
-- health checks for container and deployment verification
-- clean documentation for reviewers
+- a deployed live product
+- a clear branching and promotion story
+- CI separate from production deployment
+- containerization and runtime health checks
+- release automation
+- security scanning
+- reviewer-facing documentation
 
-### Remaining limitations
+## Current Limitations
 
-- there is no backend or persistent database because the tool is intentionally browser-first
-- screenshot availability inside Vercel dashboard is a platform-side generated-URL behavior, not an application outage
-- local Docker verification depends on Docker Engine being available on the machine running the checks
-- GitHub branch protection still needs to be enabled in repository settings for strict PR-only enforcement
+- no backend API
+- no persistent database
+- no authentication or user accounts
+- no billing or subscriptions
+- no staging environment yet
+- no end-to-end browser test suite yet
 
-## Future Improvements
+## Recommended Next Upgrades
 
-- custom domain
-- Lighthouse performance reporting
-- automated accessibility audit in CI
-- Playwright end-to-end tests
-- Dependabot for dependency maintenance
-- merge queue and stricter branch protection rules
+- add a staging deployment environment
+- add Playwright end-to-end tests
+- add Lighthouse and accessibility checks in CI
+- add a custom domain
+- add analytics and error monitoring
+- add a small backend for saved sessions or team features
 
 ## Author
 
 Muhammad Hammad
 
-Built, containerized, deployed, released, and automated by me as a portfolio project to demonstrate product engineering plus practical DevOps ownership.
+Built, containerized, documented, deployed, and automated as a portfolio project to demonstrate product engineering with practical DevOps ownership.
