@@ -2,7 +2,7 @@
 
 This project now uses a gated production pipeline:
 
-`Quality Gate -> Security Checks -> Docker Smoke Test -> Docker Publish -> Vercel Production Deploy`
+`Quality Gate -> Security Checks -> Docker Smoke Test -> Docker Publish -> Vercel Production Deploy -> Notification Stage`
 
 The important behavior is:
 

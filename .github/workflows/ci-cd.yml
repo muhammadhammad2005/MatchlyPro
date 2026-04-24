@@ -243,8 +243,8 @@ jobs:
       - name: Verify production deployment
         run: |
           deployment_url="${{ steps.deploy.outputs.deployment_url }}"
-          curl -fsS "$deployment_url" > /dev/null
-          curl -fsS "$deployment_url/health" > /dev/null
+          vercel curl --deployment "$deployment_url" / --token=${{ secrets.VERCEL_TOKEN }} > /dev/null
+          vercel curl --deployment "$deployment_url" /health --token=${{ secrets.VERCEL_TOKEN }} > /dev/null
 
       - name: Deployment summary
         if: always()
@@ -255,7 +255,7 @@ jobs:
           echo "- Deployment strategy: CLI prebuilt deploy after successful pipeline gates" >> "$GITHUB_STEP_SUMMARY"
 
   notify:
-    name: Pipeline Summary
+    name: Notification Stage
     runs-on: ubuntu-latest
     env:
       SMTP_USER: ${{ secrets.SMTP_USER }}
@@ -269,7 +269,7 @@ jobs:
     if: always()
 
     steps:
-      - name: Compute pipeline status
+      - name: Compute notification status
         id: status
         run: |
           if [[ "${{ needs.quality.result }}" == "success" && \
@@ -284,7 +284,7 @@ jobs:
             echo "message=Pipeline failed. Review the workflow logs before deploying again." >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Send email notification
+      - name: Send pipeline email notification
         if: always() && env.SMTP_USER != '' && env.SMTP_PASS != ''
         uses: dawidd6/action-send-mail@v3
         with:
@@ -309,9 +309,9 @@ jobs:
             ${{ steps.status.outputs.message }}
             Run URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      - name: Write final summary
+      - name: Write notification summary
         run: |
-          echo "# Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "# Notification Stage" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Status: ${{ steps.status.outputs.state }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Quality Gate: ${{ needs.quality.result }}" >> "$GITHUB_STEP_SUMMARY"
