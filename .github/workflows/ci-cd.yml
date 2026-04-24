@@ -257,6 +257,9 @@ jobs:
   notify:
     name: Pipeline Summary
     runs-on: ubuntu-latest
+    env:
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
     needs:
       - quality
       - security
@@ -282,16 +285,16 @@ jobs:
           fi
 
       - name: Send email notification
-        if: always() && secrets.SMTP_USER != '' && secrets.SMTP_PASS != ''
+        if: always() && env.SMTP_USER != '' && env.SMTP_PASS != ''
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.SMTP_USER }}
-          password: ${{ secrets.SMTP_PASS }}
+          username: ${{ env.SMTP_USER }}
+          password: ${{ env.SMTP_PASS }}
           subject: "[${{ steps.status.outputs.state }}] ${{ github.repository }} CI/CD"
-          to: ${{ secrets.SMTP_USER }}
-          from: GitHub Actions <${{ secrets.SMTP_USER }}>
+          to: ${{ env.SMTP_USER }}
+          from: GitHub Actions <${{ env.SMTP_USER }}>
           body: |
             Repository: ${{ github.repository }}
             Branch: ${{ github.ref_name }}
