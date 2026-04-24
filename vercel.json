@@ -20,104 +20,25 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
-    },
-    {
-      "src": "/assets/(.*)",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif))",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
     }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        },
-        {
-          "key": "X-DNS-Prefetch-Control",
-          "value": "on"
-        },
-        {
-          "key": "X-Download-Options",
-          "value": "noopen"
-        }
-      ]
-    },
-    {
-      "source": "/health.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "Pragma",
-          "value": "no-cache"
-        },
-        {
-          "key": "Expires",
-          "value": "0"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
       ]
     }
   ],
-  "env": {
-    "NODE_ENV": "production",
-    "APP_NAME": "Resume Matcher",
-    "APP_VERSION": "1.0.0"
-  },
   "github": {
     "silent": false,
     "autoAlias": true,
     "enabled": true
   },
   "regions": ["iad1"],
-  "framework": null,
-  "functions": {
-    "**": {
-      "maxDuration": 10
-    }
-  },
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "crons": [
-    {
-      "path": "/health",
-      "schedule": "*/5 * * * *"
-    }
-  ]
+  "framework": null
 }
