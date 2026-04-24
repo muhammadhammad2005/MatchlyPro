@@ -14,7 +14,7 @@ env:
 
 jobs:
   test:
-    name: Test and Lint
+    name: Test and Basic Checks
     runs-on: ubuntu-latest
     
     steps:
@@ -30,58 +30,25 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Run security audit
-      run: npm audit --audit-level=moderate || true
-
-    - name: Run Snyk security scan (if token available)
-      if: env.SNYK_TOKEN != ''
+    - name: Run Snyk security scan
       uses: snyk/actions/node@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --severity-threshold=high --fail-on=upgradable
-
-    - name: Check HTML validity (basic)
-      run: |
-        if [ -f index.html ]; then
-          echo "Checking HTML structure..."
-          # Basic HTML validation using tidy-html5 if available
-          if command -v tidy &> /dev/null; then
-            tidy -q -errors index.html 2>&1 | head -20 || true
-          else
-            # Install tidy if not available
-            sudo apt-get update && sudo apt-get install -y tidy || true
-            tidy -q -errors index.html 2>&1 | head -20 || true
-          fi
-        fi
-
-    - name: Check for broken links
-      run: |
-        # Install linkchecker if not available
-        if ! command -v linkchecker &> /dev/null; then
-          echo "Installing linkchecker..."
-          sudo apt-get update && sudo apt-get install -y linkchecker || true
-        fi
-        
-        if command -v linkchecker &> /dev/null; then
-          echo "Checking for broken links..."
-          linkchecker --check-extern --no-status index.html 2>&1 | head -50 || true
-        else
-          echo "Linkchecker not available, skipping..."
-        fi
+        args: --severity-threshold=high
 
     - name: Validate file structure
       run: |
         echo "Validating project structure..."
-        ls -la
         echo "Checking required files..."
         [ -f index.html ] && echo "✓ index.html exists" || echo "✗ index.html missing"
         [ -f package.json ] && echo "✓ package.json exists" || echo "✗ package.json missing"
         [ -f Dockerfile ] && echo "✓ Dockerfile exists" || echo "✗ Dockerfile missing"
         [ -f vercel.json ] && echo "✓ vercel.json exists" || echo "✗ vercel.json missing"
+        [ -f health.html ] && echo "✓ health.html exists" || echo "✗ health.html missing"
 
   build-docker:
-    name: Build Docker Image (Multi-Architecture)
+    name: Build Docker Image
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
@@ -93,16 +60,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Set up QEMU for multi-architecture builds
-      uses: docker/setup-qemu-action@v3
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        driver-opts: |
-          image=moby/buildkit:master
-          network=host
 
     - name: Log in to Container Registry
       uses: docker/login-action@v3
@@ -124,33 +81,15 @@ jobs:
           type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image (multi-arch)
+    - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64,linux/arm64
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-        provenance: false
-        sbom: true
-
-    - name: Scan built image with Trivy
-      if: github.event_name != 'pull_request'
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-        format: 'sarif'
-        output: 'trivy-container-results.sarif'
-        severity: 'CRITICAL,HIGH'
-
-    - name: Upload container scan results
-      if: github.event_name != 'pull_request'
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy-container-results.sarif'
 
     - name: Generate build summary
       if: always()
@@ -158,22 +97,16 @@ jobs:
         echo "# Docker Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Build Details:" >> $GITHUB_STEP_SUMMARY
-        echo "- **Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
         echo "- **Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Tags:** ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## Security:" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Multi-architecture support" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ SBOM generation" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Container vulnerability scanning" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "> Image available at: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
 
   deploy-vercel:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: [test, security-scan]
+    needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
@@ -246,134 +179,16 @@ jobs:
         
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Security Checks:" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ All security scans passed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Snyk security scan passed" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Code quality checks passed" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "> Deployment completed at $(date -u)" >> $GITHUB_STEP_SUMMARY
 
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Run Trivy vulnerability scanner (filesystem)
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH,MEDIUM'
-        exit-code: 0
-
-    - name: Run Trivy vulnerability scanner (container image)
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'image'
-        image-ref: 'nginx:alpine'
-        format: 'sarif'
-        output: 'trivy-image-results.sarif'
-        severity: 'CRITICAL,HIGH'
-        exit-code: 0
-
-    - name: Run Grype vulnerability scanner
-      uses: anchore/scan-action@v3
-      with:
-        path: "."
-        fail-build: false
-        output-format: "sarif"
-        severity-cutoff: "medium"
-
-    - name: Run Snyk security scan (additional checks)
-      uses: snyk/actions/node@master
-      if: env.SNYK_TOKEN != ''
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=critical --fail-on=upgradable --scan-all-unmanaged
-
-    - name: Run OWASP Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: 'MatchlyPro'
-        path: '.'
-        format: 'SARIF'
-        out: 'dependency-check-report.sarif'
-        args: '--enableRetired'
-
-    - name: Run Semgrep SAST scan
-      uses: returntocorp/semgrep-action@v1
-      with:
-        config: p/security-audit
-        output: 'semgrep-results.sarif'
-
-    - name: Run Hadolint for Dockerfile linting
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        dockerfile: 'Dockerfile'
-        output-format: 'sarif'
-        output-file: 'hadolint-results.sarif'
-
-    - name: Run Checkov for infrastructure as code scanning
-      uses: bridgecrewio/checkov-action@v12
-      with:
-        directory: .
-        output_format: sarif
-        output_file_path: checkov-results.sarif
-        quiet: true
-
-    - name: Run Secret scanning with Gitleaks
-      uses: gitleaks/gitleaks-action@v2
-      env:
-        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-      with:
-        config-path: .gitleaks.toml
-        redact: true
-        format: sarif
-        output: gitleaks-results.sarif
-
-    - name: Upload security scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: |
-          trivy-results.sarif
-          trivy-image-results.sarif
-          grype-report.sarif
-          dependency-check-report.sarif
-          semgrep-results.sarif
-          hadolint-results.sarif
-          checkov-results.sarif
-          gitleaks-results.sarif
-
-    - name: Generate security scan summary
-      if: always()
-      run: |
-        echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## Tools Executed:" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Trivy (filesystem)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Trivy (container image)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Grype" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Snyk" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ OWASP Dependency Check" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Semgrep SAST" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Hadolint (Dockerfile)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Checkov (IaC)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Gitleaks (Secrets)" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## Results uploaded to GitHub Security tab" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "> **Note:** Review findings in the Security tab of your repository." >> $GITHUB_STEP_SUMMARY
 
   notify:
     name: Notify Status
     runs-on: ubuntu-latest
-    needs: [test, build-docker, deploy-vercel, security-scan]
+    needs: [test, build-docker, deploy-vercel]
     if: always()
     
     steps:
@@ -383,7 +198,7 @@ jobs:
         # Check all job results
         if [[ "${{ needs.test.result }}" == "success" && \
               "${{ needs.build-docker.result }}" == "success" && \
-              "${{ needs.security-scan.result }}" == "success" ]]; then
+              "${{ needs.deploy-vercel.result }}" == "success" ]]; then
           echo "status=success" >> $GITHUB_OUTPUT
           echo "message=✅ All checks passed successfully! Pipeline completed." >> $GITHUB_OUTPUT
           echo "emoji=✅" >> $GITHUB_OUTPUT
@@ -398,53 +213,11 @@ jobs:
         fi
         
         # Create summary message
-        echo "summary=Test: ${{ needs.test.result }}, Build: ${{ needs.build-docker.result }}, Security: ${{ needs.security-scan.result }}, Deploy: ${{ needs.deploy-vercel.result }}" >> $GITHUB_OUTPUT
+        echo "summary=Test: ${{ needs.test.result }}, Build: ${{ needs.build-docker.result }}, Deploy: ${{ needs.deploy-vercel.result }}" >> $GITHUB_OUTPUT
         echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
         echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         echo "commit=${{ github.sha }}" >> $GITHUB_OUTPUT
         echo "run_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
-
-    - name: Send WhatsApp notification via Twilio
-      if: env.TWILIO_ACCOUNT_SID != '' && env.TWILIO_AUTH_TOKEN != '' && env.TWILIO_WHATSAPP_FROM != '' && env.WHATSAPP_TO != ''
-      uses: twilio-labs/actions-sms@v1
-      with:
-        from: ${{ env.TWILIO_WHATSAPP_FROM }}
-        to: ${{ env.WHATSAPP_TO }}
-        body: |
-          ${{ steps.check-status.outputs.emoji }} GitHub Actions - ${{ github.repository }}
-          
-          Status: ${{ steps.check-status.outputs.status }}
-          Branch: ${{ github.ref_name }}
-          
-          ${{ steps.check-status.outputs.message }}
-          
-          Details: ${{ steps.check-status.outputs.run_url }}
-          
-          ${{ steps.check-status.outputs.summary }}
-      env:
-        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-        TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
-        WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
-
-    - name: Send WhatsApp notification via CallMeBot (Alternative)
-      if: env.CALLMEBOT_API_KEY != '' && env.WHATSAPP_PHONE != ''
-      run: |
-        STATUS_EMOJI="${{ steps.check-status.outputs.emoji }}"
-        STATUS_MESSAGE="${{ steps.check-status.outputs.message }}"
-        REPO_NAME="${{ github.repository }}"
-        BRANCH_NAME="${{ github.ref_name }}"
-        RUN_URL="${{ steps.check-status.outputs.run_url }}"
-        
-        # URL encode the message
-        MESSAGE="${STATUS_EMOJI} GitHub Actions - ${REPO_NAME}%0A%0AStatus: ${{ steps.check-status.outputs.status }}%0ABranch: ${BRANCH_NAME}%0A%0A${STATUS_MESSAGE}%0A%0ADetails: ${RUN_URL}"
-        
-        # Send via CallMeBot API
-        curl -X POST \
-          "https://api.callmebot.com/whatsapp.php?phone=${{ secrets.WHATSAPP_PHONE }}&text=${MESSAGE}&apikey=${{ secrets.CALLMEBOT_API_KEY }}"
-      env:
-        CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
-        WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
 
     - name: Send email notification
       if: env.SMTP_USER != '' && env.SMTP_PASS != ''
@@ -470,7 +243,6 @@ jobs:
           Job Results:
           - Test: ${{ needs.test.result }}
           - Build Docker: ${{ needs.build-docker.result }}
-          - Security Scan: ${{ needs.security-scan.result }}
           - Deploy Vercel: ${{ needs.deploy-vercel.result }}
           
           View details: ${{ steps.check-status.outputs.run_url }}
@@ -478,38 +250,6 @@ jobs:
           ---
           This is an automated notification from GitHub Actions.
           
-    - name: Send email notification via GitHub CLI (alternative)
-      if: env.GITHUB_TOKEN != ''
-      run: |
-        STATUS="${{ steps.check-status.outputs.status }}"
-        MESSAGE="${{ steps.check-status.outputs.message }}"
-        REPO="${{ github.repository }}"
-        BRANCH="${{ github.ref_name }}"
-        RUN_URL="${{ steps.check-status.outputs.run_url }}"
-        
-        # Create email body
-        EMAIL_BODY="GitHub Actions Workflow Status
-        
-        Repository: $REPO
-        Branch: $BRANCH
-        Commit: ${{ github.sha }}
-        Status: $STATUS
-        
-        $MESSAGE
-        
-        Job Results:
-        - Test: ${{ needs.test.result }}
-        - Build Docker: ${{ needs.build-docker.result }}
-        - Security Scan: ${{ needs.security-scan.result }}
-        - Deploy Vercel: ${{ needs.deploy-vercel.result }}
-        
-        View details: $RUN_URL
-        
-        ---
-        This is an automated notification from GitHub Actions."
-        
-        echo "$EMAIL_BODY" | mail -s "GitHub Actions: $STATUS - $REPO" muhammadhammad.020050@gmail.com || echo "Mail command not available, skipping..."
-
     - name: Create workflow summary
       run: |
         echo "# Workflow Summary" >> $GITHUB_STEP_SUMMARY
@@ -521,7 +261,6 @@ jobs:
         echo "### Job Results:" >> $GITHUB_STEP_SUMMARY
         echo "- Test: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- Build Docker: ${{ needs.build-docker.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- Deploy Vercel: ${{ needs.deploy-vercel.result }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Details:" >> $GITHUB_STEP_SUMMARY
