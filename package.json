@@ -6,11 +6,12 @@
   "scripts": {
     "start": "serve -s . -p 3000",
     "dev": "serve -s . -p 3000",
-    "build": "echo 'No build step required for static site'",
-    "test": "echo 'No tests defined'",
-    "lint": "echo 'No linting configured'",
-    "docker:build": "docker build -t resume-matcher .",
-    "docker:run": "docker run -p 3000:80 resume-matcher",
+    "build": "node ./scripts/validate-project.mjs",
+    "lint": "node ./scripts/validate-project.mjs",
+    "test": "node ./scripts/smoke-static-site.mjs",
+    "ci:validate": "npm run lint && npm run test",
+    "docker:build": "docker build --target production -t resume-matcher .",
+    "docker:run": "docker run -p 8080:8080 resume-matcher",
     "docker:compose": "docker-compose up"
   },
   "keywords": [

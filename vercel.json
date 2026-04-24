@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "name": "resume-matcher",
   "public": true,
@@ -34,11 +35,8 @@
       ]
     }
   ],
-  "github": {
-    "silent": false,
-    "autoAlias": true,
-    "enabled": true
+  "git": {
+    "deploymentEnabled": false
   },
-  "regions": ["iad1"],
-  "framework": null
+  "regions": ["iad1"]
 }

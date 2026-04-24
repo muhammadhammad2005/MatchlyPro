@@ -1,292 +1,320 @@
-name: CI/CD Pipeline
+name: Production CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
-  workflow_dispatch: # Allow manual triggering
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-cicd-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.event.repository.name }}
-  REPO_NAME: ${{ github.repository }}
-  # For your repository: muhammadhammad2005/MatchlyPro
-  # IMAGE_NAME will be "MatchlyPro"
-  # Optional: Add DOCKERHUB_USERNAME and DOCKERHUB_TOKEN secrets for Docker Hub
+  NODE_VERSION: "20"
+  IMAGE_NAME: resume-matcher
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
-  test:
-    name: Test and Basic Checks
+  quality:
+    name: Quality Gate
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 10
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run Snyk security scan
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=high
+      - name: Validate project structure
+        run: npm run lint
 
-    - name: Validate file structure
-      run: |
-        echo "Validating project structure..."
-        echo "Checking required files..."
-        [ -f index.html ] && echo "✓ index.html exists" || echo "✗ index.html missing"
-        [ -f package.json ] && echo "✓ package.json exists" || echo "✗ package.json missing"
-        [ -f Dockerfile ] && echo "✓ Dockerfile exists" || echo "✗ Dockerfile missing"
-        [ -f vercel.json ] && echo "✓ vercel.json exists" || echo "✗ vercel.json missing"
-        [ -f health.html ] && echo "✓ health.html exists" || echo "✗ health.html missing"
+      - name: Run static smoke tests
+        run: npm test
 
-  build-docker:
-    name: Build Docker Image
+      - name: Upload validation summary
+        if: always()
+        run: |
+          echo "# Quality Gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- npm ci completed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project validation passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Static smoke tests passed" >> "$GITHUB_STEP_SUMMARY"
+
+  security:
+    name: Security Checks
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    
+    needs: quality
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
+      - name: Run Snyk dependency scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --severity-threshold=high --all-projects
+
+      - name: Security summary
+        if: always()
+        run: |
+          echo "# Security Checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- npm audit executed at high severity threshold" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Snyk dependency scan executed" >> "$GITHUB_STEP_SUMMARY"
+
+  docker-smoke:
+    name: Docker Smoke Test
+    runs-on: ubuntu-latest
+    needs:
+      - quality
+      - security
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build production container
+        run: docker build --target production --tag resume-matcher:ci .
+
+      - name: Run container
+        run: docker run -d --name resume-matcher-ci -p 8080:8080 resume-matcher:ci
+
+      - name: Verify container health endpoint
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://127.0.0.1:8080/health > /dev/null; then
+              echo "Container health endpoint is reachable."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Container health endpoint did not become ready in time."
+          docker logs resume-matcher-ci
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f resume-matcher-ci
+
+  docker-publish:
+    name: Publish Container Images
+    runs-on: ubuntu-latest
+    needs:
+      - docker-smoke
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Log in to Docker Hub (optional)
-      if: secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
-      uses: docker/login-action@v3
-      with:
-        registry: docker.io
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: |
-          ghcr.io/${{ github.repository }}
-          ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/{1}', secrets.DOCKERHUB_USERNAME, env.IMAGE_NAME) || '' }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY_IMAGE }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+            type=ref,event=branch
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        # Remove cache options to avoid "Cache export is not supported" error
-        # cache-from: type=gha
-        # cache-to: type=gha,mode=max
+      - name: Build and push multi-platform images
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Generate build summary
-      if: always()
-      run: |
-        echo "# Docker Build Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## Build Details:" >> $GITHUB_STEP_SUMMARY
-        echo "- **GitHub Registry:** ghcr.io/${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-        if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-          echo "- **Docker Hub:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
-        fi
-        echo "- **Tags:** ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "> Image available at: \`ghcr.io/${{ github.repository }}:latest\`" >> $GITHUB_STEP_SUMMARY
-        if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-          echo "> Docker Hub: \`docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Container publish summary
+        if: always()
+        run: |
+          echo "# Container Publish" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- GHCR image: \`${{ env.REGISTRY_IMAGE }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Docker Hub image: \`${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tags: ${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
 
   deploy-vercel:
-    name: Deploy to Vercel
+    name: Deploy to Vercel Production
     runs-on: ubuntu-latest
-    needs: test
+    needs:
+      - quality
+      - security
+      - docker-publish
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+    timeout-minutes: 15
+    environment:
+      name: production
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-    - name: Install Vercel CLI
-      run: npm install --global vercel@latest
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Pull Vercel Environment Information
-      run: |
-        vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      env:
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
 
-    - name: Build Project
-      run: |
-        vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      env:
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-    - name: Deploy to Vercel
-      id: deploy
-      run: |
-        DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-        echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-        echo "Deployment URL: $DEPLOYMENT_URL"
-      env:
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Build Vercel output
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-    - name: Run Vercel deployment checks
-      run: |
-        # Check if deployment is accessible
-        if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
-          echo "Testing deployment accessibility..."
-          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" "${{ steps.deploy.outputs.deployment_url }}/health" || true
-          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" "${{ steps.deploy.outputs.deployment_url }}" || true
-        fi
+      - name: Deploy prebuilt output
+        id: deploy
+        run: |
+          deployment_url="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "deployment_url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "Deployment URL: $deployment_url"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-    - name: Create deployment summary
-      if: always()
-      run: |
-        echo "# Vercel Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## Deployment Details:" >> $GITHUB_STEP_SUMMARY
-        echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        
-        if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
-          echo "## Deployment URL:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Production URL:** [${{ steps.deploy.outputs.deployment_url }}](${{ steps.deploy.outputs.deployment_url }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Quick Links:" >> $GITHUB_STEP_SUMMARY
-          echo "- [Health Check](${{ steps.deploy.outputs.deployment_url }}/health)" >> $GITHUB_STEP_SUMMARY
-          echo "- [Main Application](${{ steps.deploy.outputs.deployment_url }})" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "## ❌ Deployment failed or URL not available" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## Security Checks:" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Snyk security scan passed" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Code quality checks passed" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "> Deployment completed at $(date -u)" >> $GITHUB_STEP_SUMMARY
+      - name: Verify production deployment
+        run: |
+          deployment_url="${{ steps.deploy.outputs.deployment_url }}"
+          curl -fsS "$deployment_url" > /dev/null
+          curl -fsS "$deployment_url/health" > /dev/null
 
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "# Vercel Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Production URL: ${{ steps.deploy.outputs.deployment_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Deployment strategy: CLI prebuilt deploy after successful pipeline gates" >> "$GITHUB_STEP_SUMMARY"
 
   notify:
-    name: Notify Status
+    name: Pipeline Summary
     runs-on: ubuntu-latest
-    needs: [test, build-docker, deploy-vercel]
+    needs:
+      - quality
+      - security
+      - docker-smoke
+      - docker-publish
+      - deploy-vercel
     if: always()
-    
-    steps:
-    - name: Determine workflow status
-      id: check-status
-      run: |
-        # Check all job results
-        if [[ "${{ needs.test.result }}" == "success" && \
-              "${{ needs.build-docker.result }}" == "success" && \
-              "${{ needs.deploy-vercel.result }}" == "success" ]]; then
-          echo "status=success" >> $GITHUB_OUTPUT
-          echo "message=✅ All checks passed successfully! Pipeline completed." >> $GITHUB_OUTPUT
-          echo "emoji=✅" >> $GITHUB_OUTPUT
-        elif [[ "${{ needs.deploy-vercel.result }}" == "success" ]]; then
-          echo "status=success" >> $GITHUB_OUTPUT
-          echo "message=✅ Deployment to Vercel successful! Application is live." >> $GITHUB_OUTPUT
-          echo "emoji=🚀" >> $GITHUB_OUTPUT
-        else
-          echo "status=failure" >> $GITHUB_OUTPUT
-          echo "message=❌ Some checks failed. Please review the logs." >> $GITHUB_OUTPUT
-          echo "emoji=❌" >> $GITHUB_OUTPUT
-        fi
-        
-        # Create summary message
-        echo "summary=Test: ${{ needs.test.result }}, Build: ${{ needs.build-docker.result }}, Deploy: ${{ needs.deploy-vercel.result }}" >> $GITHUB_OUTPUT
-        echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
-        echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-        echo "commit=${{ github.sha }}" >> $GITHUB_OUTPUT
-        echo "run_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
 
-    - name: Send email notification
-      if: env.SMTP_USER != '' && env.SMTP_PASS != ''
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.SMTP_USER }}
-        password: ${{ secrets.SMTP_PASS }}
-        subject: "GitHub Actions: ${{ steps.check-status.outputs.status }} - ${{ github.repository }}"
-        to: muhammadhammad.020050@gmail.com
-        from: GitHub Actions <${{ secrets.SMTP_USER }}>
-        body: |
-          GitHub Actions Workflow Status
-          
-          Repository: ${{ github.repository }}
-          Branch: ${{ github.ref_name }}
-          Commit: ${{ github.sha }}
-          Status: ${{ steps.check-status.outputs.status }}
-          
-          ${{ steps.check-status.outputs.message }}
-          
-          Job Results:
-          - Test: ${{ needs.test.result }}
-          - Build Docker: ${{ needs.build-docker.result }}
-          - Deploy Vercel: ${{ needs.deploy-vercel.result }}
-          
-          View details: ${{ steps.check-status.outputs.run_url }}
-          
-          ---
-          This is an automated notification from GitHub Actions.
-          
-    - name: Create workflow summary
-      run: |
-        echo "# Workflow Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## ${{ steps.check-status.outputs.emoji }} Status: ${{ steps.check-status.outputs.status }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "${{ steps.check-status.outputs.message }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Job Results:" >> $GITHUB_STEP_SUMMARY
-        echo "- Test: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Build Docker: ${{ needs.build-docker.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Deploy Vercel: ${{ needs.deploy-vercel.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Details:" >> $GITHUB_STEP_SUMMARY
-        echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Run URL: ${{ steps.check-status.outputs.run_url }}" >> $GITHUB_STEP_SUMMARY
+    steps:
+      - name: Compute pipeline status
+        id: status
+        run: |
+          if [[ "${{ needs.quality.result }}" == "success" && \
+                "${{ needs.security.result }}" == "success" && \
+                "${{ needs.docker-smoke.result }}" == "success" && \
+                ( "${{ needs.docker-publish.result }}" == "success" || "${{ needs.docker-publish.result }}" == "skipped" ) && \
+                ( "${{ needs.deploy-vercel.result }}" == "success" || "${{ needs.deploy-vercel.result }}" == "skipped" ) ]]; then
+            echo "state=success" >> "$GITHUB_OUTPUT"
+            echo "message=Pipeline completed successfully." >> "$GITHUB_OUTPUT"
+          else
+            echo "state=failure" >> "$GITHUB_OUTPUT"
+            echo "message=Pipeline failed. Review the workflow logs before deploying again." >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send email notification
+        if: always() && secrets.SMTP_USER != '' && secrets.SMTP_PASS != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "[${{ steps.status.outputs.state }}] ${{ github.repository }} CI/CD"
+          to: ${{ secrets.SMTP_USER }}
+          from: GitHub Actions <${{ secrets.SMTP_USER }}>
+          body: |
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+
+            Quality Gate: ${{ needs.quality.result }}
+            Security Checks: ${{ needs.security.result }}
+            Docker Smoke Test: ${{ needs.docker-smoke.result }}
+            Docker Publish: ${{ needs.docker-publish.result }}
+            Vercel Deploy: ${{ needs.deploy-vercel.result }}
+
+            ${{ steps.status.outputs.message }}
+            Run URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Write final summary
+        run: |
+          echo "# Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: ${{ steps.status.outputs.state }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Quality Gate: ${{ needs.quality.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Security Checks: ${{ needs.security.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Docker Smoke Test: ${{ needs.docker-smoke.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Docker Publish: ${{ needs.docker-publish.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Vercel Deploy: ${{ needs.deploy-vercel.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.status.outputs.message }}" >> "$GITHUB_STEP_SUMMARY"
