@@ -1,327 +1,212 @@
-# MatchlyPro - AI Resume Matcher
+# MatchlyPro
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/muhammadhammad2005/MatchlyPro)
+MatchlyPro is a production-ready resume matcher web app that compares a resume against a job description, highlights keyword coverage, surfaces ATS risks, and gives actionable improvement suggestions.
 
-MatchlyPro is a modern web application that uses AI-powered analysis to match resumes with job descriptions. It provides detailed insights, keyword matching, and improvement suggestions for job applicants.
+This project is part of my portfolio and showcases end-to-end ownership:
 
-## 🚀 Live Demo
-Deployed on Vercel: [https://matchlypro.vercel.app](https://matchlypro.vercel.app)
+- product idea and implementation
+- UI/UX design in a single-page app
+- client-side PDF resume parsing with PDF.js
+- Docker containerization with Nginx
+- production deployment on Vercel
+- CI/CD automation with GitHub Actions
+- security checks with `npm audit` and Snyk
 
-## ✨ Features
+## Live Project
 
-### Core Functionality
-- **Drag & Drop PDF Upload**: Upload resumes via file selection or drag-and-drop interface
-- **Real-time Analysis**: Instant matching score calculation with detailed insights
-- **Keyword Analysis**: Identifies strong matches, partial matches, and missing keywords
-- **Section-wise Scoring**: Breaks down resume into sections (Experience, Education, Skills, etc.)
-- **ATS Risk Assessment**: Highlights potential Applicant Tracking System issues
-- **Improvement Suggestions**: Actionable recommendations to improve resume match
+- Production app: [https://matchlypro.vercel.app](https://matchlypro.vercel.app)
+- Repository: [https://github.com/muhammadhammad2005/MatchlyPro](https://github.com/muhammadhammad2005/MatchlyPro)
 
-### User Experience
-- **Theme Support**: Light and dark theme with smooth transitions
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **Export Results**: Save analysis as text summary or snapshot
-- **Visual Feedback**: Progress indicators, loading animations, and success notifications
-- **Accessibility**: Keyboard navigation, screen reader support, and ARIA labels
+## What The App Does
 
-### Technical Features
-- **Client-side PDF Processing**: Uses PDF.js for secure, client-side PDF text extraction
-- **No Backend Required**: All processing happens in the browser
-- **Modern UI**: Glassmorphism design with smooth animations
-- **Performance Optimized**: Fast loading with efficient algorithms
+- compares a job description and resume in real time
+- supports PDF resume upload and text extraction in the browser
+- calculates an overall match score
+- groups results into strong, partial, and missing keywords
+- analyzes resume sections and experience signals
+- flags ATS-related risks
+- lets users copy, export, and save result snapshots locally
+- supports light and dark mode
+- works on desktop and mobile
 
-## 🛠️ How It Works
+## Why This Project Matters
 
-### 1. Input
-- **Job Description**: Paste the target job description in the left editor
-- **Resume**: Paste resume text or upload a PDF file in the right editor
+This is not just a frontend page. It is a complete portfolio project where I handled both application delivery and DevOps:
 
-### 2. Analysis Process
-1. **Text Extraction**: PDF files are processed client-side using PDF.js
-2. **Keyword Matching**: Advanced algorithm matches keywords between job description and resume
-3. **Section Analysis**: Resume is analyzed by sections (Experience, Education, Skills, Projects)
-4. **Score Calculation**: Weighted scoring based on keyword relevance and section completeness
+- built the tool myself
+- deployed it to Vercel myself
+- containerized it with Docker myself
+- configured production CI/CD myself
+- integrated security scanning and release gates myself
 
-### 3. Results Display
-- **Match Score**: Overall percentage match (0-100%)
-- **Keyword Categories**: Strong matches, partial matches, missing keywords
-- **Section Scores**: Individual scores for each resume section
-- **ATS Risks**: Potential issues that could affect ATS parsing
-- **Improvement Suggestions**: Specific recommendations to improve match
+If you are reviewing this repository for hiring or portfolio purposes, the repo demonstrates practical ownership across development, deployment, and operations.
 
-## 📁 Project Structure
+## Tech Stack
 
-```
-MatchlyPro/
-├── index.html              # Main application (HTML, CSS, JavaScript)
-├── logo/                   # Brand logos and icons
-├── package.json           # Project configuration and dependencies
-├── vercel.json           # Vercel deployment configuration
-├── .github/workflows/    # GitHub Actions CI/CD pipeline
-│   └── ci-cd.yml         # Automated deployment workflow
-├── Dockerfile            # Docker container configuration
-├── docker-compose.yml    # Docker Compose for local development
-├── nginx.conf           # Nginx web server configuration
-├── .dockerignore        # Docker ignore file
-└── README.md            # This documentation
-```
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- PDF.js
+- Nginx
+- Docker
+- Docker Hub
+- GitHub Actions
+- Vercel
+- Snyk
 
-## 🐳 Docker Deployment
+## Application Highlights
 
-MatchlyPro is fully containerized and can be deployed using Docker.
+### Resume analysis engine
 
-### Running with Docker Compose
+- keyword matching between job description and resume
+- weighted scoring logic
+- section-aware analysis
+- role-family insights
+- risk detection for weak resume coverage
+
+### Frontend experience
+
+- responsive single-page interface
+- polished visual design
+- drag-and-drop PDF upload
+- live character counters
+- session history using local storage
+- copy/export/save utilities
+
+### Privacy-first approach
+
+- no backend required for core matching
+- resume parsing happens in the browser
+- no database
+- no user account requirement
+
+## DevOps And Production Setup
+
+The project includes a real CI/CD flow instead of a basic demo pipeline.
+
+### Current pipeline
+
+`Quality Gate -> Security Checks -> Docker Smoke Test -> Publish Container Images -> Deploy to Vercel Production -> Notification Stage`
+
+### What the pipeline does
+
+- installs dependencies with `npm ci`
+- validates project structure
+- runs static smoke checks
+- runs `npm audit`
+- runs a Snyk dependency scan
+- builds and smoke-tests the production Docker image
+- publishes container images to GHCR and Docker Hub
+- deploys to Vercel only after earlier gates succeed
+- sends a notification stage summary at the end
+
+### Deployment rule
+
+Vercel does not auto-deploy directly from Git pushes for this project.
+
+The repository uses CLI-based deployment after pipeline success, and `vercel.json` disables automatic Git deployments for tighter release control.
+
+## Containerization
+
+The app is containerized for production use with Nginx.
+
+### Docker features
+
+- lightweight `nginx:alpine` production image
+- custom Nginx config
+- health endpoint support
+- non-root runtime user
+- static asset caching
+- security headers
+
+### Run locally with Docker
 
 ```bash
-# Start the application
-docker-compose up -d
-
-# Check running containers
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-
-# Stop the application
-docker-compose down
+docker build --target production -t resume-matcher .
+docker run --rm -p 8080:8080 resume-matcher
 ```
 
-### Building Docker Image
+Open `http://localhost:8080`
+
+### Run locally with Node
 
 ```bash
-# Build the Docker image
-docker build -t matchlypro-resume-matcher .
-
-# Run the container
-docker run -p 8080:8080 --name matchlypro matchlypro-resume-matcher
-
-# Access the application at http://localhost:8080
-```
-
-### Docker Image Features
-- **Multi-stage build** for optimized image size
-- **Non-root user** for security
-- **Health checks** for container monitoring
-- **Nginx** for production-ready web server
-- **Security headers** and compression enabled
-
-## 🔒 Security Scanning
-
-The CI/CD pipeline includes comprehensive security scanning:
-
-### Automated Security Checks
-1. **Trivy Vulnerability Scanner** - Scans for vulnerabilities in dependencies and container images
-2. **Grype Vulnerability Scanner** - Alternative scanner for comprehensive coverage
-3. **Snyk Security Scan** - Advanced dependency vulnerability detection (requires SNYK_TOKEN)
-4. **OWASP Dependency Check** - Identifies project dependencies with known vulnerabilities
-5. **npm audit** - Node.js package vulnerability scanning
-
-### Security Features
-- **GitHub Security Tab Integration**: All scan results are uploaded to GitHub Security tab
-- **SARIF Reports**: Standardized security report format
-- **Fail-on-high-severity**: Pipeline fails on critical vulnerabilities
-- **Regular Scanning**: Automated scanning on every push and pull request
-
-## 📱 WhatsApp Notifications
-
-Get real-time notifications on WhatsApp about your CI/CD pipeline status.
-
-### Setup Instructions
-
-#### Option 1: Twilio WhatsApp API (Recommended)
-1. **Create a Twilio Account** at [twilio.com](https://www.twilio.com)
-2. **Enable WhatsApp Sandbox** in Twilio Console
-3. **Get Credentials**:
-   - `TWILIO_ACCOUNT_SID`
-   - `TWILIO_AUTH_TOKEN`
-   - `TWILIO_WHATSAPP_FROM` (Twilio WhatsApp number)
-   - `WHATSAPP_TO` (Your WhatsApp number with country code)
-
-4. **Add Secrets to GitHub**:
-   ```bash
-   TWILIO_ACCOUNT_SID=your_account_sid
-   TWILIO_AUTH_TOKEN=your_auth_token
-   TWILIO_WHATSAPP_FROM=+14155238886  # Twilio sandbox number
-   WHATSAPP_TO=+1234567890            # Your WhatsApp number
-   ```
-
-#### Option 2: CallMeBot API (Free Alternative)
-1. **Get CallMeBot API Key**:
-   - Message "I allow callmebot to send me messages" to WhatsApp number `+34 644 44 84 24`
-   - You'll receive an API key
-
-2. **Add Secrets to GitHub**:
-   ```bash
-   CALLMEBOT_API_KEY=your_api_key
-   WHATSAPP_PHONE=+1234567890  # Your WhatsApp number with country code
-   ```
-
-#### Option 3: Email Notifications (Fallback)
-1. **Configure SMTP** (Gmail example):
-   ```bash
-   SMTP_USER=your-email@gmail.com
-   SMTP_PASS=your-app-password
-   EMAIL_TO=recipient@example.com
-   ```
-
-### Notification Types
-- **Success**: All tests passed, Docker built successfully
-- **Failure**: Any job in the pipeline failed
-- **Deployment**: Successful deployment to Vercel
-- **Security Alerts**: Critical vulnerabilities detected
-
-## 🚀 Quick Deployment
-
-### Option 1: One-Click Deploy to Vercel
-Click the "Deploy with Vercel" button above. No configuration needed!
-
-### Option 2: Manual Deployment
-1. **Push to GitHub**: Commit and push this repository to GitHub
-2. **Connect to Vercel**: Import repository in Vercel dashboard
-3. **Configure**: Set Framework Preset to "Other" (static site)
-4. **Deploy**: Click deploy - your site will be live in seconds
-
-### Option 3: Local Development
-```bash
-# Clone repository
-git clone https://github.com/muhammadhammad2005/MatchlyPro.git
-cd MatchlyPro
-
-# Install dependencies
-npm install
-
-# Start local server
+npm ci
 npm start
-# Open http://localhost:3000
 ```
 
-## 🔧 Technical Implementation
+Open `http://localhost:3000`
 
-### Frontend Technologies
-- **HTML5**: Semantic markup with accessibility features
-- **CSS3**: Modern CSS with variables, grid, flexbox, and animations
-- **JavaScript (ES6+)**: Vanilla JavaScript with modular architecture
-- **PDF.js**: Client-side PDF text extraction library
+## Local Validation
 
-### Key Algorithms
-1. **Keyword Extraction**: Tokenization, stemming, and TF-IDF scoring
-2. **Semantic Matching**: Context-aware keyword matching
-3. **Section Detection**: Automatic resume section identification
-4. **Score Calculation**: Weighted scoring based on industry standards
-
-### Performance Optimizations
-- **Lazy Loading**: Resources loaded on demand
-- **Caching**: Local storage for recent analyses
-- **Debounced Input**: Efficient real-time processing
-- **Optimized Algorithms**: O(n log n) complexity for large texts
-
-## 📊 Usage Guide
-
-### For Job Seekers
-1. **Upload Resume**: Drag and drop your PDF resume or paste text
-2. **Paste Job Description**: Copy-paste the job description you're targeting
-3. **Analyze**: Click "Analyze Match" to get instant results
-4. **Review**: Check match score, keyword analysis, and improvement suggestions
-5. **Improve**: Use suggestions to optimize your resume for the specific job
-
-### For Recruiters
-1. **Test Resumes**: Compare multiple resumes against a job description
-2. **Identify Gaps**: Quickly see missing skills and experience
-3. **Standardize Evaluation**: Consistent scoring across candidates
-4. **Save Time**: Automated analysis reduces manual review time
-
-## 🔒 Privacy & Security
-
-- **No Data Storage**: All processing happens in your browser
-- **No Server Upload**: PDFs are processed client-side using PDF.js
-- **No Tracking**: No analytics, cookies, or user tracking
-- **Open Source**: Transparent code that you can audit
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Development Setup
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-
-# The application will auto-reload on changes
+npm run ci:validate
 ```
 
-## 📈 Roadmap
+This runs:
 
-### Planned Features
-- [ ] Multi-resume comparison
-- [ ] Industry-specific templates
-- [ ] LinkedIn profile import
-- [ ] Cover letter generator
-- [ ] Interview question suggestions
-- [ ] Salary range estimation
+- project validation
+- static smoke testing
 
-### Technical Improvements
-- [x] ✅ Docker containerization
-- [x] ✅ Comprehensive security scanning
-- [x] ✅ WhatsApp notifications for CI/CD
-- [ ] Progressive Web App (PWA) support
-- [ ] Offline functionality
-- [ ] Advanced NLP for semantic analysis
-- [ ] Browser extension
-- [ ] API for integration with other platforms
+## Project Structure
 
-## 🐛 Troubleshooting
+```text
+.
+├─ .github/workflows/ci-cd.yml
+├─ Dockerfile
+├─ docker-compose.yml
+├─ nginx.conf
+├─ vercel.json
+├─ package.json
+├─ index.html
+├─ health.html
+├─ scripts/
+│  ├─ smoke-static-site.mjs
+│  └─ validate-project.mjs
+└─ logo/
+```
 
-### Common Issues
+## Vercel Note
 
-**PDF Upload Not Working**
-- Ensure PDF is not password protected
-- Check browser supports PDF.js (modern browsers only)
-- Try a different PDF file
+If Vercel shows `No Screenshot Available` on the deployment overview, that usually does not mean the deployment is broken.
 
-**Slow Analysis**
-- Very long documents may take longer to process
-- Consider breaking into sections
-- Check browser performance
+In this project, the production deployment works, but the generated deployment URL can still be treated differently from the public production domain. Vercel's dashboard screenshot system uses generated deployment URLs, and protected or restricted generated URLs may fail screenshot capture even while the production domain is healthy.
 
-**Display Issues**
-- Clear browser cache
-- Try different browser
-- Check console for errors (F12 → Console)
+Relevant references:
 
-### Getting Help
-1. Check existing [GitHub Issues](https://github.com/muhammadhammad2005/MatchlyPro/issues)
-2. Create a new issue with detailed description
-3. Include browser version and steps to reproduce
+- Vercel generated URLs: https://vercel.com/docs/concepts/deployments/generated-urls
+- Vercel deployment protection: https://vercel.com/docs/security/deployment-protection
+- Similar community report: https://community.vercel.com/t/deployment-status-shows-error-due-to-authentication-redirect/7658
 
-## 📄 License
+## Production Readiness Summary
 
-MIT License - see LICENSE file for details
+This repository is in a strong portfolio-ready state for a static production app:
 
-## 🙏 Acknowledgments
+- working production deployment
+- gated CI/CD pipeline
+- containerized runtime
+- security scanning integrated
+- release flow separated from direct Vercel Git auto-deploy
+- health checks for container and deployment verification
+- clean documentation for reviewers
 
-- **PDF.js**: For client-side PDF processing
-- **Vercel**: For hosting and deployment
-- **GitHub**: For version control and CI/CD
-- **Docker**: For containerization and deployment
-- **Trivy & Grype**: For security vulnerability scanning
-- **Twilio & CallMeBot**: For WhatsApp notification services
-- **Open Source Community**: For inspiration and tools
+### Remaining limitations
 
-## 📞 Contact
+- there is no backend or persistent database because the tool is intentionally browser-first
+- screenshot availability inside Vercel dashboard is a platform-side generated-URL behavior, not an application outage
+- local Docker verification depends on Docker Engine being available on the machine running the checks
 
-**Repository**: https://github.com/muhammadhammad2005/MatchlyPro
-**Live Demo**: https://matchlypro.vercel.app
-**Issues**: https://github.com/muhammadhammad2005/MatchlyPro/issues
+## Future Improvements
 
----
+- custom domain
+- Lighthouse performance report badge
+- automated accessibility audit in CI
+- Playwright end-to-end tests
+- Dependabot for dependency maintenance
+- versioned releases and changelog
 
-Built with ❤️ by the MatchlyPro Team | Making job matching smarter and fairer
+## Author
+
+Muhammad Hammad
+
+Built, containerized, deployed, and automated by me as a portfolio project to demonstrate product engineering plus practical DevOps ownership.

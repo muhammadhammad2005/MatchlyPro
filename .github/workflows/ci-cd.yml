@@ -78,7 +78,7 @@ jobs:
         run: npm audit --audit-level=high
 
       - name: Run Snyk dependency scan
-        uses: snyk/actions/node@master
+        uses: snyk/actions/node@v1.0.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
