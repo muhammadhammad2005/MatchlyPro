@@ -33,6 +33,14 @@ jobs:
     - name: Run security audit
       run: npm audit --audit-level=moderate || true
 
+    - name: Run Snyk security scan (if token available)
+      if: env.SNYK_TOKEN != ''
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high --fail-on=upgradable
+
     - name: Check HTML validity (basic)
       run: |
         if [ -f index.html ]; then
@@ -40,16 +48,37 @@ jobs:
           # Basic HTML validation using tidy-html5 if available
           if command -v tidy &> /dev/null; then
             tidy -q -errors index.html 2>&1 | head -20 || true
+          else
+            # Install tidy if not available
+            sudo apt-get update && sudo apt-get install -y tidy || true
+            tidy -q -errors index.html 2>&1 | head -20 || true
           fi
         fi
 
     - name: Check for broken links
       run: |
-        if command -v linkchecker &> /dev/null; then
-          linkchecker --check-extern index.html || true
-        else
-          echo "Linkchecker not installed, skipping..."
+        # Install linkchecker if not available
+        if ! command -v linkchecker &> /dev/null; then
+          echo "Installing linkchecker..."
+          sudo apt-get update && sudo apt-get install -y linkchecker || true
         fi
+        
+        if command -v linkchecker &> /dev/null; then
+          echo "Checking for broken links..."
+          linkchecker --check-extern --no-status index.html 2>&1 | head -50 || true
+        else
+          echo "Linkchecker not available, skipping..."
+        fi
+
+    - name: Validate file structure
+      run: |
+        echo "Validating project structure..."
+        ls -la
+        echo "Checking required files..."
+        [ -f index.html ] && echo "✓ index.html exists" || echo "✗ index.html missing"
+        [ -f package.json ] && echo "✓ package.json exists" || echo "✗ package.json missing"
+        [ -f Dockerfile ] && echo "✓ Dockerfile exists" || echo "✗ Dockerfile missing"
+        [ -f vercel.json ] && echo "✓ vercel.json exists" || echo "✗ vercel.json missing"
 
   build-docker:
     name: Build Docker Image (Multi-Architecture)
@@ -259,13 +288,13 @@ jobs:
         output-format: "sarif"
         severity-cutoff: "medium"
 
-    - name: Run Snyk security scan
+    - name: Run Snyk security scan (additional checks)
       uses: snyk/actions/node@master
       if: env.SNYK_TOKEN != ''
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --severity-threshold=high --fail-on=upgradable
+        args: --severity-threshold=critical --fail-on=upgradable --scan-all-unmanaged
 
     - name: Run OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
