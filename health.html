@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Check - Resume Matcher</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .status {
+            font-size: 1.5rem;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+        .healthy {
+            background: rgba(72, 187, 120, 0.3);
+            color: #48bb78;
+        }
+        .info {
+            margin-top: 2rem;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+        .timestamp {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Resume Matcher</h1>
+        <div class="status healthy">HEALTHY</div>
+        <p>Application is running successfully</p>
+        
+        <div class="info">
+            <h3>System Information</h3>
+            <p><strong>Service:</strong> Resume Matcher Web Application</p>
+            <p><strong>Status:</strong> Operational</p>
+            <p><strong>Version:</strong> 1.0.0</p>
+            <p><strong>Environment:</strong> Production</p>
+            <p><strong>Health Check:</strong> Passed ✓</p>
+        </div>
+        
+        <div class="timestamp" id="timestamp">
+            Last checked: <span id="time"></span>
+        </div>
+    </div>
+
+    <script>
+        // Update timestamp
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZoneName: 'short'
+            };
+            document.getElementById('time').textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Simulate health check
+        setInterval(() => {
+            fetch('/')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    console.log('Health check passed at:', new Date().toISOString());
+                })
+                .catch(error => {
+                    console.error('Health check failed:', error);
+                });
+        }, 30000);
+    </script>
+</body>
+</html>

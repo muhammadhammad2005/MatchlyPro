@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  resumematcherai:
+  matchlypro:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: resumematcherai-resume-matcher
+    container_name: matchlypro-resume-matcher
     ports:
       - "8080:8080"
     environment:
@@ -19,43 +19,43 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - resumematcherai-network
+      - matchlypro-network
     volumes:
       - ./logs:/var/log/nginx
     labels:
-      - "com.resumematcherai.description=Resume Matcher Application"
-      - "com.resumematcherai.maintainer=ResumeMatcherAI Team"
+      - "com.matchlypro.description=Resume Matcher Application"
+      - "com.matchlypro.maintainer=MatchlyPro Team"
 
   # Optional: Add a database service if needed in the future
   # postgres:
   #   image: postgres:15-alpine
-  #   container_name: resumematcherai-db
+  #   container_name: matchlypro-db
   #   environment:
-  #     POSTGRES_DB: resumematcherai
-  #     POSTGRES_USER: resumematcherai_user
+  #     POSTGRES_DB: matchlypro
+  #     POSTGRES_USER: matchlypro_user
   #     POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
   #   volumes:
   #     - postgres_data:/var/lib/postgresql/data
   #   ports:
   #     - "5432:5432"
   #   networks:
-  #     - resumematcherai-network
+  #     - matchlypro-network
   #   restart: unless-stopped
 
   # Optional: Add Redis for caching if needed
   # redis:
   #   image: redis:7-alpine
-  #   container_name: resumematcherai-redis
+  #   container_name: matchlypro-redis
   #   ports:
   #     - "6379:6379"
   #   networks:
-  #     - resumematcherai-network
+  #     - matchlypro-network
   #   restart: unless-stopped
 
 networks:
-  resumematcherai-network:
+  matchlypro-network:
     driver: bridge
-    name: resumematcherai-network
+    name: matchlypro-network
 
 # volumes:
 #   postgres_data:

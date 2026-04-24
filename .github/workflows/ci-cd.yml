@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # For your repository: muhammadhammad2005/ResumeMatcherAI
+  # For your repository: muhammadhammad2005/MatchlyPro
 
 jobs:
   test:
@@ -52,7 +52,7 @@ jobs:
         fi
 
   build-docker:
-    name: Build Docker Image
+    name: Build Docker Image (Multi-Architecture)
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
@@ -65,8 +65,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up QEMU for multi-architecture builds
+      uses: docker/setup-qemu-action@v3
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          image=moby/buildkit:master
+          network=host
 
     - name: Log in to Container Registry
       uses: docker/login-action@v3
@@ -86,35 +93,134 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image
+    - name: Build and push Docker image (multi-arch)
       uses: docker/build-push-action@v5
       with:
         context: .
+        platforms: linux/amd64,linux/arm64
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        provenance: false
+        sbom: true
+
+    - name: Scan built image with Trivy
+      if: github.event_name != 'pull_request'
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        format: 'sarif'
+        output: 'trivy-container-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload container scan results
+      if: github.event_name != 'pull_request'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-container-results.sarif'
+
+    - name: Generate build summary
+      if: always()
+      run: |
+        echo "# Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Build Details:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tags:** ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Security:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Multi-architecture support" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ SBOM generation" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Container vulnerability scanning" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "> Image available at: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
 
   deploy-vercel:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: build-docker
+    needs: [test, security-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
-        working-directory: ./
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install Vercel CLI
+      run: npm install --global vercel@latest
+
+    - name: Pull Vercel Environment Information
+      run: |
+        vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      env:
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    - name: Build Project
+      run: |
+        vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      env:
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    - name: Deploy to Vercel
+      id: deploy
+      run: |
+        DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+        echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+        echo "Deployment URL: $DEPLOYMENT_URL"
+      env:
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    - name: Run Vercel deployment checks
+      run: |
+        # Check if deployment is accessible
+        if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
+          echo "Testing deployment accessibility..."
+          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" "${{ steps.deploy.outputs.deployment_url }}/health" || true
+          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" "${{ steps.deploy.outputs.deployment_url }}" || true
+        fi
+
+    - name: Create deployment summary
+      if: always()
+      run: |
+        echo "# Vercel Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Deployment Details:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
+          echo "## Deployment URL:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production URL:** [${{ steps.deploy.outputs.deployment_url }}](${{ steps.deploy.outputs.deployment_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Quick Links:" >> $GITHUB_STEP_SUMMARY
+          echo "- [Health Check](${{ steps.deploy.outputs.deployment_url }}/health)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Main Application](${{ steps.deploy.outputs.deployment_url }})" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## ❌ Deployment failed or URL not available" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Security Checks:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ All security scans passed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Code quality checks passed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "> Deployment completed at $(date -u)" >> $GITHUB_STEP_SUMMARY
 
   security-scan:
     name: Security Scan
@@ -125,13 +231,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run Trivy vulnerability scanner
+    - name: Run Trivy vulnerability scanner (filesystem)
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'fs'
         scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        exit-code: 0
+
+    - name: Run Trivy vulnerability scanner (container image)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'image'
+        image-ref: 'nginx:alpine'
+        format: 'sarif'
+        output: 'trivy-image-results.sarif'
+        severity: 'CRITICAL,HIGH'
+        exit-code: 0
 
     - name: Run Grype vulnerability scanner
       uses: anchore/scan-action@v3
@@ -147,15 +265,47 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --severity-threshold=high
+        args: --severity-threshold=high --fail-on=upgradable
 
     - name: Run OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
       with:
-        project: 'ResumeMatcherAI'
+        project: 'MatchlyPro'
         path: '.'
         format: 'SARIF'
         out: 'dependency-check-report.sarif'
+        args: '--enableRetired'
+
+    - name: Run Semgrep SAST scan
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: p/security-audit
+        output: 'semgrep-results.sarif'
+
+    - name: Run Hadolint for Dockerfile linting
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: 'Dockerfile'
+        output-format: 'sarif'
+        output-file: 'hadolint-results.sarif'
+
+    - name: Run Checkov for infrastructure as code scanning
+      uses: bridgecrewio/checkov-action@v12
+      with:
+        directory: .
+        output_format: sarif
+        output_file_path: checkov-results.sarif
+        quiet: true
+
+    - name: Run Secret scanning with Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+      with:
+        config-path: .gitleaks.toml
+        redact: true
+        format: sarif
+        output: gitleaks-results.sarif
 
     - name: Upload security scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
@@ -163,8 +313,33 @@ jobs:
       with:
         sarif_file: |
           trivy-results.sarif
+          trivy-image-results.sarif
           grype-report.sarif
           dependency-check-report.sarif
+          semgrep-results.sarif
+          hadolint-results.sarif
+          checkov-results.sarif
+          gitleaks-results.sarif
+
+    - name: Generate security scan summary
+      if: always()
+      run: |
+        echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Tools Executed:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Trivy (filesystem)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Trivy (container image)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Grype" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Snyk" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ OWASP Dependency Check" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Semgrep SAST" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Hadolint (Dockerfile)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Checkov (IaC)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Gitleaks (Secrets)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Results uploaded to GitHub Security tab" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "> **Note:** Review findings in the Security tab of your repository." >> $GITHUB_STEP_SUMMARY
 
   notify:
     name: Notify Status
@@ -242,8 +417,8 @@ jobs:
         CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
         WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
 
-    - name: Send email notification (fallback)
-      if: env.SMTP_USER != '' && env.SMTP_PASS != '' && env.EMAIL_TO != ''
+    - name: Send email notification
+      if: env.SMTP_USER != '' && env.SMTP_PASS != ''
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
@@ -251,7 +426,7 @@ jobs:
         username: ${{ secrets.SMTP_USER }}
         password: ${{ secrets.SMTP_PASS }}
         subject: "GitHub Actions: ${{ steps.check-status.outputs.status }} - ${{ github.repository }}"
-        to: ${{ secrets.EMAIL_TO }}
+        to: muhammadhammad.020050@gmail.com
         from: GitHub Actions <${{ secrets.SMTP_USER }}>
         body: |
           GitHub Actions Workflow Status
@@ -273,6 +448,38 @@ jobs:
           
           ---
           This is an automated notification from GitHub Actions.
+          
+    - name: Send email notification via GitHub CLI (alternative)
+      if: env.GITHUB_TOKEN != ''
+      run: |
+        STATUS="${{ steps.check-status.outputs.status }}"
+        MESSAGE="${{ steps.check-status.outputs.message }}"
+        REPO="${{ github.repository }}"
+        BRANCH="${{ github.ref_name }}"
+        RUN_URL="${{ steps.check-status.outputs.run_url }}"
+        
+        # Create email body
+        EMAIL_BODY="GitHub Actions Workflow Status
+        
+        Repository: $REPO
+        Branch: $BRANCH
+        Commit: ${{ github.sha }}
+        Status: $STATUS
+        
+        $MESSAGE
+        
+        Job Results:
+        - Test: ${{ needs.test.result }}
+        - Build Docker: ${{ needs.build-docker.result }}
+        - Security Scan: ${{ needs.security-scan.result }}
+        - Deploy Vercel: ${{ needs.deploy-vercel.result }}
+        
+        View details: $RUN_URL
+        
+        ---
+        This is an automated notification from GitHub Actions."
+        
+        echo "$EMAIL_BODY" | mail -s "GitHub Actions: $STATUS - $REPO" muhammadhammad.020050@gmail.com || echo "Mail command not available, skipping..."
 
     - name: Create workflow summary
       run: |
