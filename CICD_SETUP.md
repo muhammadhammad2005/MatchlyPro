@@ -39,6 +39,8 @@ GitHub Push/PR → Test (with Snyk) → Docker Build → Vercel Deploy → Notif
 | `SMTP_USER` | SMTP username (Gmail) | Email notifications |
 | `SMTP_PASS` | SMTP password/app password | Email notifications |
 | `SNYK_TOKEN` | Snyk API token | Snyk security scanning |
+| `DOCKERHUB_USERNAME` | Docker Hub username (optional) | Docker Hub push |
+| `DOCKERHUB_TOKEN` | Docker Hub access token (optional) | Docker Hub push |
 
 ### Email Configuration
 
@@ -65,12 +67,15 @@ The test job performs:
 The Docker build job:
 - Builds a Docker image using the multi-stage Dockerfile
 - Pushes the image to GitHub Container Registry
+- Optionally pushes to Docker Hub if credentials are provided
 - Tags images with branch name, commit SHA, and latest
 
 **Key Features:**
 - Uses security best practices (non-root user)
 - Minimal Alpine-based image
 - Nginx web server for static content
+- Supports both GitHub Container Registry and Docker Hub
+- Fixed cache export error by removing unsupported cache options
 
 ### 3. Deploy Vercel Job
 
@@ -115,6 +120,10 @@ The notification job:
 
    **For Security Scanning:**
    - `SNYK_TOKEN`: Get from [Snyk.io](https://snyk.io) → Account Settings → API Token
+
+   **For Docker Hub (Optional):**
+   - `DOCKERHUB_USERNAME`: Your Docker Hub username
+   - `DOCKERHUB_TOKEN`: Docker Hub access token (create at https://hub.docker.com/settings/security)
 
 ### Step 2: Verify Configuration
 
