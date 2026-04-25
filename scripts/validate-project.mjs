@@ -49,8 +49,9 @@ assert(typeof packageJson.scripts?.test === "string", "package.json must define 
 assert(typeof packageJson.scripts?.["ci:validate"] === "string", "package.json must define a ci:validate script.");
 
 assert(vercelConfig.git?.deploymentEnabled === false, "vercel.json must disable automatic Git deployments.");
-assert(Array.isArray(vercelConfig.routes), "vercel.json must define routes for static hosting.");
-assert(vercelConfig.routes.some((route) => route.src === "/health"), "vercel.json must expose /health.");
+const vercelRoutes = vercelConfig.rewrites || vercelConfig.routes;
+assert(Array.isArray(vercelRoutes), "vercel.json must define routes or rewrites for static hosting.");
+assert(vercelRoutes.some((route) => (route.source || route.src) === "/health"), "vercel.json must expose /health.");
 
 assert(ciWorkflow.includes("Notification Stage"), "CI workflow must include a notification stage.");
 assert(ciWorkflow.includes("gitleaks"), "CI workflow must include gitleaks scanning.");
