@@ -32,9 +32,11 @@ It is not a full multi-tenant SaaS yet because there is no database, authenticat
 ## What The App Does
 
 - compares a resume with a job description in real time
-- extracts text from uploaded PDF resumes in the browser
-- calculates an overall match score
-- groups results into strong, partial, and missing keywords
+- features deep AI analysis using a customized "Elite Recruiter" prompt for robust, context-aware scoring
+- extracts text from uploaded PDF resumes natively in the browser
+- calculates an overall match score and categorizes results (strong, partial, missing)
+- dynamically sizes complex AI feedback using robust flexbox/grid UI wrapping (prevents UI blowout)
+- provides clean error-handling for API rate-limits and safely parses markdown-polluted JSON
 - flags ATS issues and resume risks
 - offers copy, export, and local save actions
 - works on desktop and mobile
@@ -97,10 +99,12 @@ sequenceDiagram
 
 ### Product experience
 
+- deep AI integration with graceful fallbacks and user-friendly quota/rate-limit alerts
+- robust, dynamic UI that intelligently handles long AI-generated text without breaking layouts
 - browser-first workflow with no account required
 - privacy-friendly resume analysis
 - responsive single-page interface
-- local history and export utilities
+- dynamic local history that automatically names sessions based on AI-detected job titles
 
 ### Delivery discipline
 
