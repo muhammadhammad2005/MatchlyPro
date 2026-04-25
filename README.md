@@ -1,13 +1,13 @@
 # MatchlyPro
 
-MatchlyPro is a production-oriented resume matcher web app that compares a resume against a job description, highlights keyword coverage, surfaces ATS risks, and suggests practical improvements.
+MatchlyPro is a production-oriented resume matcher web app that compares a resume against a job description, highlights keyword coverage, surfaces ATS risks, and suggests practical improvements. It now supports server-side AI analysis through the Gemini API.
 
 This repository is designed as a portfolio project that shows both product engineering and delivery discipline:
 
 - product design and implementation
 - client-side PDF parsing with PDF.js
-- production-ready static hosting with Vercel
-- containerized runtime with Nginx and Docker
+- production-ready hosting with a lightweight Node server
+- containerized runtime with Node and Docker
 - CI checks with GitHub Actions
 - release-gated production promotion
 - basic security scanning and smoke validation
@@ -25,9 +25,9 @@ This is a strong portfolio example for:
 - shipping polished browser-based tools
 - practical CI/CD ownership
 - containerization and deployment workflows
-- release-based production control for a static app
+- release-based production control for the app runtime
 
-It is not a full multi-tenant SaaS yet because there is no backend, database, authentication, billing, or persistent user accounts. It is better described as a production-minded web product with DevOps discipline than as a complete SaaS platform.
+It is not a full multi-tenant SaaS yet because there is no database, authentication, billing, or persistent user accounts. It is better described as a production-minded web product with AI-assisted analysis and practical DevOps discipline than as a complete SaaS platform.
 
 ## What The App Does
 
@@ -45,7 +45,7 @@ It is not a full multi-tenant SaaS yet because there is no backend, database, au
 - CSS3
 - Vanilla JavaScript
 - PDF.js
-- Nginx
+- Node.js
 - Docker
 - GitHub Actions
 - GitHub Releases
@@ -57,8 +57,9 @@ It is not a full multi-tenant SaaS yet because there is no backend, database, au
 
 ```mermaid
 flowchart LR
-    U[User Browser] --> V[Vercel Production Deployment]
-    V --> S[Static Assets<br/>index.html + health.html]
+    U[User Browser] --> A[MatchlyPro Node Server]
+    A --> S[Static App<br/>index.html + health.html]
+    A --> R[Gemini API<br/>gemini-2.5-flash-lite]
     S --> J[Browser App Logic]
     J --> P[PDF.js Parsing In Browser]
     J --> L[Local Storage Session History]
@@ -188,12 +189,28 @@ In practical terms, someone can fork the repo and run their own copy, but they c
 
 ### Run with Node
 
+1. Create a local env file from the example:
+
+```bash
+cp .env.example .env
+```
+
+2. Set these values:
+
+- `GEMINI_API_KEY`
+- `GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`
+- `GEMINI_MODEL=gemini-2.5-flash-lite`
+
+3. Start the app:
+
 ```bash
 npm ci
 npm start
 ```
 
 Open `http://localhost:3000`
+
+If the Gemini env vars are not set, the app still runs and falls back to local heuristic analysis.
 
 ### Run with Docker
 
@@ -229,7 +246,7 @@ That release tag triggers the production workflow, publishes release artifacts, 
 
 - `vercel.json` disables Git-based Vercel auto deployment
 - the app exposes `/health` for deployment verification
-- Docker runtime uses Nginx for static delivery
+- Docker runtime uses the Node server for app and API delivery
 - CI and release jobs depend on repository secrets for external integrations
 
 ## Repository Structure
@@ -249,10 +266,12 @@ That release tag triggers the production workflow, publishes release artifacts, 
 |-- Dockerfile
 |-- LICENSE
 |-- README.md
+|-- .env.example
 |-- health.html
 |-- index.html
 |-- nginx.conf
 |-- package.json
+|-- server.mjs
 `-- vercel.json
 ```
 
@@ -270,7 +289,7 @@ This repository is portfolio-ready for a production-minded web app because it in
 
 ## Current Limitations
 
-- no backend API
+- no persistent backend storage
 - no persistent database
 - no authentication or user accounts
 - no billing or subscriptions
@@ -284,7 +303,7 @@ This repository is portfolio-ready for a production-minded web app because it in
 - add Lighthouse and accessibility checks in CI
 - add a custom domain
 - add analytics and error monitoring
-- add a small backend for saved sessions or team features
+- add persistent storage for saved sessions or team features
 
 ## Author
 
