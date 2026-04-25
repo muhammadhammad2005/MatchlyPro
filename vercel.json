@@ -3,25 +3,9 @@
   "version": 2,
   "name": "resume-matcher",
   "public": true,
-  "builds": [
-    {
-      "src": "**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/health",
-      "dest": "/health.html"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/health", "destination": "/health.html" },
+    { "source": "/((?!api/.*).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
