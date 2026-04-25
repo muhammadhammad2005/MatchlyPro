@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MatchlyPro — AI Resume Matcher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link
-    rel="icon"
-    type="image/svg+xml"
-    href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%25" stop-color="%236366f1"/><stop offset="100%25" stop-color="%238b5cf6"/></linearGradient></defs><circle cx="64" cy="64" r="60" fill="none" stroke="url(%23g)" stroke-width="8"/><path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(%23g)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%25" stop-color="%236366f1"/><stop offset="100%25" stop-color="%238b5cf6"/></linearGradient></defs><circle cx="64" cy="64" r="60" fill="none" stroke="url(%23g)" stroke-width="8"/><path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(%23g)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' />
   <style>
     /* ===== THEME VARIABLES ===== */
     :root {
@@ -34,7 +33,7 @@
       --primary-glow: rgba(99, 102, 241, 0.15);
       --secondary: #8b5cf6;
       --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      --gradient-subtle: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.08) 100%);
+      --gradient-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
       --success: #10b981;
       --success-soft: rgba(16, 185, 129, 0.1);
       --warning: #f59e0b;
@@ -82,7 +81,7 @@
       --primary-glow: rgba(129, 140, 248, 0.2);
       --secondary: #a78bfa;
       --gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
-      --gradient-subtle: linear-gradient(135deg, rgba(129,140,248,0.1) 0%, rgba(167,139,250,0.1) 100%);
+      --gradient-subtle: linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
       --success: #34d399;
       --success-soft: rgba(52, 211, 153, 0.12);
       --warning: #fbbf24;
@@ -106,8 +105,20 @@
     }
 
     /* ===== RESET & BASE ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; height: 100%; -webkit-text-size-adjust: 100%; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      height: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
@@ -127,24 +138,43 @@
       pointer-events: none;
       z-index: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 40%, rgba(99,102,241,0.07), transparent),
-        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(139,92,246,0.06), transparent),
-        radial-gradient(ellipse 70% 50% at 60% 90%, rgba(59,130,246,0.05), transparent);
+        radial-gradient(ellipse 80% 60% at 20% 40%, rgba(99, 102, 241, 0.07), transparent),
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(139, 92, 246, 0.06), transparent),
+        radial-gradient(ellipse 70% 50% at 60% 90%, rgba(59, 130, 246, 0.05), transparent);
       animation: bgFloat 25s ease-in-out infinite;
     }
+
     body.dark::before {
       background:
-        radial-gradient(ellipse 80% 60% at 20% 40%, rgba(99,102,241,0.12), transparent),
-        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(139,92,246,0.10), transparent),
-        radial-gradient(ellipse 70% 50% at 60% 90%, rgba(59,130,246,0.08), transparent);
+        radial-gradient(ellipse 80% 60% at 20% 40%, rgba(99, 102, 241, 0.12), transparent),
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(139, 92, 246, 0.10), transparent),
+        radial-gradient(ellipse 70% 50% at 60% 90%, rgba(59, 130, 246, 0.08), transparent);
     }
 
-    a { color: inherit; text-decoration: none; }
-    button, textarea, input { font-family: inherit; }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+    button,
+    textarea,
+    input {
+      font-family: inherit;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--scrollbar-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 3px;
+    }
 
     /* ===== LAYOUT ===== */
     .app-wrapper {
@@ -154,6 +184,7 @@
       flex-direction: column;
       min-height: 100vh;
     }
+
     .app-main {
       flex: 1;
       width: 100%;
@@ -173,6 +204,7 @@
       border-bottom: 1px solid var(--header-border);
       transition: background 0.3s ease, border-color 0.3s ease;
     }
+
     .header-inner {
       max-width: 1440px;
       margin: 0 auto;
@@ -183,13 +215,18 @@
       justify-content: space-between;
       gap: 16px;
     }
+
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
       transition: opacity 0.2s;
     }
-    .brand:hover { opacity: 0.85; }
+
+    .brand:hover {
+      opacity: 0.85;
+    }
+
     .brand-icon {
       width: 38px;
       height: 38px;
@@ -197,11 +234,13 @@
       place-items: center;
       flex-shrink: 0;
     }
+
     .brand-icon svg {
       width: 100%;
       height: 100%;
-      filter: drop-shadow(0 2px 8px rgba(99,102,241,0.3));
+      filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.3));
     }
+
     .brand-name {
       font-size: 1.2rem;
       font-weight: 800;
@@ -211,6 +250,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
     .brand-tag {
       display: none;
       font-size: 0.75rem;
@@ -222,11 +262,19 @@
       background: var(--gradient-subtle);
       border: 1px solid var(--border);
     }
+
     @media (min-width: 768px) {
-      .brand-tag { display: inline-flex; }
+      .brand-tag {
+        display: inline-flex;
+      }
     }
 
-    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .theme-toggle {
       width: 44px;
       height: 44px;
@@ -241,18 +289,44 @@
       position: relative;
       overflow: hidden;
     }
+
     .theme-toggle:hover {
       border-color: var(--border-accent);
       color: var(--primary);
       background: var(--primary-soft);
       transform: scale(1.05);
     }
-    .theme-toggle svg { width: 20px; height: 20px; transition: transform 0.3s ease; }
-    .theme-toggle:hover svg { transform: rotate(15deg); }
-    .icon-sun, .icon-moon { position: absolute; transition: opacity 0.3s, transform 0.3s; }
-    .icon-moon { opacity: 0; transform: rotate(-90deg) scale(0.5); }
-    body.dark .icon-sun { opacity: 0; transform: rotate(90deg) scale(0.5); }
-    body.dark .icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle:hover svg {
+      transform: rotate(15deg);
+    }
+
+    .icon-sun,
+    .icon-moon {
+      position: absolute;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .icon-moon {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.5);
+    }
+
+    body.dark .icon-sun {
+      opacity: 0;
+      transform: rotate(90deg) scale(0.5);
+    }
+
+    body.dark .icon-moon {
+      opacity: 1;
+      transform: rotate(0) scale(1);
+    }
 
     /* ===== HERO ===== */
     .hero {
@@ -260,6 +334,7 @@
       text-align: center;
       position: relative;
     }
+
     .hero-eyebrow {
       display: inline-flex;
       align-items: center;
@@ -274,6 +349,7 @@
       letter-spacing: 0.02em;
       margin-bottom: 16px;
     }
+
     .hero-eyebrow::before {
       content: "";
       width: 6px;
@@ -282,6 +358,7 @@
       background: var(--primary);
       animation: pulse-dot 2s ease-in-out infinite;
     }
+
     .hero h1 {
       font-size: clamp(1.75rem, 4vw, 2.8rem);
       font-weight: 900;
@@ -289,12 +366,14 @@
       line-height: 1.15;
       margin-bottom: 12px;
     }
+
     .hero h1 span {
       background: var(--gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
     .hero p {
       color: var(--text-muted);
       font-size: 1.05rem;
@@ -302,6 +381,7 @@
       margin: 0 auto 24px;
       line-height: 1.7;
     }
+
     .hero-actions {
       display: flex;
       gap: 12px;
@@ -327,73 +407,95 @@
       overflow: hidden;
       isolation: isolate;
     }
+
     .btn::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
       transform: translateX(-120%);
       transition: transform 0.5s ease;
       pointer-events: none;
       z-index: 1;
     }
-    .btn:hover::after { transform: translateX(120%); }
-    .btn:active { transform: scale(0.96); transition-duration: 0.1s; }
+
+    .btn:hover::after {
+      transform: translateX(120%);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+      transition-duration: 0.1s;
+    }
+
     .btn-primary {
       background: var(--gradient);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
+
     .btn-primary:hover {
-      box-shadow: 0 8px 24px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
       transform: translateY(-2px);
     }
+
     .btn-secondary {
       background: var(--surface);
       color: var(--text);
       border: 1px solid var(--border-strong);
       box-shadow: var(--shadow-xs);
     }
+
     .btn-secondary:hover {
       border-color: var(--border-accent);
       background: var(--surface-hover);
       transform: translateY(-2px);
       box-shadow: var(--shadow-sm);
     }
+
     .btn-ghost {
       background: transparent;
       color: var(--text-muted);
       border: 1px solid var(--border);
     }
+
     .btn-ghost:hover {
       color: var(--text);
       border-color: var(--border-strong);
       background: var(--surface-hover);
       transform: translateY(-1px);
     }
+
     .btn-danger {
       background: var(--danger-soft);
       color: var(--danger);
-      border: 1px solid rgba(239,68,68,0.15);
+      border: 1px solid rgba(239, 68, 68, 0.15);
     }
+
     .btn-danger:hover {
-      background: rgba(239,68,68,0.18);
-      border-color: rgba(239,68,68,0.3);
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.3);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(239,68,68,0.15);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
     }
+
     .btn-sm {
       padding: 9px 18px;
       font-size: 0.84rem;
       border-radius: var(--radius);
     }
+
     .btn-icon {
       width: 38px;
       height: 38px;
       padding: 0;
       border-radius: var(--radius-sm);
     }
-    .btn-icon svg { width: 16px; height: 16px; }
+
+    .btn-icon svg {
+      width: 16px;
+      height: 16px;
+    }
 
     /* ===== WORKSPACE ===== */
     .workspace {
@@ -402,6 +504,7 @@
       padding-bottom: 32px;
       grid-template-columns: 1fr;
     }
+
     @media (min-width: 1080px) {
       .workspace {
         grid-template-columns: 1fr 1fr;
@@ -409,6 +512,7 @@
         align-items: start;
       }
     }
+
     @media (min-width: 1280px) {
       .workspace {
         grid-template-columns: 1.1fr 0.9fr;
@@ -424,6 +528,7 @@
       box-shadow: var(--shadow);
       transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
     }
+
     .panel-header {
       display: flex;
       align-items: flex-start;
@@ -432,17 +537,20 @@
       margin-bottom: 20px;
       flex-wrap: wrap;
     }
+
     .panel-title {
       font-size: 1.15rem;
       font-weight: 800;
       letter-spacing: -0.02em;
     }
+
     .panel-desc {
       color: var(--text-muted);
       font-size: 0.88rem;
       margin-top: 4px;
       line-height: 1.5;
     }
+
     .panel-actions {
       display: flex;
       align-items: center;
@@ -465,10 +573,12 @@
       opacity: 0;
       transition: opacity 0.3s, color 0.3s;
     }
+
     .rt-indicator.active {
       opacity: 1;
       color: var(--primary);
     }
+
     .rt-indicator::before {
       content: "";
       width: 6px;
@@ -477,30 +587,44 @@
       background: currentColor;
       transition: background 0.3s;
     }
+
     .rt-indicator.active::before {
       animation: pulse-dot 1s ease-in-out infinite;
     }
 
     /* ===== EDITOR ===== */
-    .editor-stack { display: flex; flex-direction: column; gap: 20px; }
-    .field-group { display: flex; flex-direction: column; gap: 8px; }
+    .editor-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .field-label {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
     }
+
     .field-label-text {
       font-size: 0.85rem;
       font-weight: 700;
       color: var(--text-secondary);
     }
+
     .field-count {
       font-size: 0.75rem;
       font-weight: 600;
       color: var(--text-faint);
       font-variant-numeric: tabular-nums;
     }
+
     .editor-shell {
       position: relative;
       border-radius: var(--radius-lg);
@@ -509,10 +633,12 @@
       overflow: hidden;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
+
     .editor-shell:focus-within {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px var(--input-focus-ring);
     }
+
     textarea {
       width: 100%;
       min-height: 200px;
@@ -525,7 +651,10 @@
       color: var(--text);
       background: transparent;
     }
-    textarea::placeholder { color: var(--text-faint); }
+
+    textarea::placeholder {
+      color: var(--text-faint);
+    }
 
     .editor-footer {
       display: flex;
@@ -536,6 +665,7 @@
       border-top: 1px solid var(--border);
       background: var(--surface-inset);
     }
+
     .upload-btn {
       display: inline-flex;
       align-items: center;
@@ -552,26 +682,44 @@
       position: relative;
       overflow: hidden;
     }
+
     .upload-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
-    .upload-btn:active { transform: translateY(0); }
-    .upload-btn svg { width: 14px; height: 14px; }
-    .upload-btn.loading { opacity: 0.8; pointer-events: none; }
-    .upload-btn.loading svg { animation: spin 0.8s linear infinite; }
+
+    .upload-btn:active {
+      transform: translateY(0);
+    }
+
+    .upload-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .upload-btn.loading {
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .upload-btn.loading svg {
+      animation: spin 0.8s linear infinite;
+    }
+
     .upload-progress {
       position: absolute;
       bottom: 0;
       left: 0;
       height: 2px;
-      background: rgba(255,255,255,0.6);
+      background: rgba(255, 255, 255, 0.6);
       width: 0%;
       transition: width 0.3s;
     }
+
     .upload-btn.loading .upload-progress {
       animation: progressPulse 1.5s ease-in-out infinite;
     }
+
     .upload-meta {
       font-size: 0.78rem;
       color: var(--text-faint);
@@ -579,7 +727,12 @@
       align-items: center;
       gap: 6px;
     }
-    .upload-meta.has-file { color: var(--success); font-weight: 600; }
+
+    .upload-meta.has-file {
+      color: var(--success);
+      font-weight: 600;
+    }
+
     .upload-meta.has-file::before {
       content: "";
       width: 6px;
@@ -594,6 +747,7 @@
       background: var(--primary-soft);
       box-shadow: 0 0 0 3px var(--input-focus-ring), inset 0 0 20px var(--primary-glow);
     }
+
     .drag-hint {
       position: absolute;
       inset: 0;
@@ -602,21 +756,39 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      background: rgba(255,255,255,0.96);
+      background: rgba(255, 255, 255, 0.96);
       z-index: 10;
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.2s, visibility 0.2s;
       border-radius: inherit;
     }
-    body.dark .drag-hint { background: rgba(11,17,32,0.96); }
+
+    body.dark .drag-hint {
+      background: rgba(11, 17, 32, 0.96);
+    }
+
     .editor-shell.drag-over .drag-hint {
       opacity: 1;
       visibility: visible;
     }
-    .drag-hint svg { width: 40px; height: 40px; color: var(--primary); }
-    .drag-hint-text { font-weight: 700; color: var(--text); font-size: 0.95rem; }
-    .drag-hint-sub { color: var(--text-muted); font-size: 0.82rem; }
+
+    .drag-hint svg {
+      width: 40px;
+      height: 40px;
+      color: var(--primary);
+    }
+
+    .drag-hint-text {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .drag-hint-sub {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
 
     /* ===== ACTION BAR ===== */
     .action-bar {
@@ -631,15 +803,30 @@
       background: var(--surface-inset);
       border: 1px solid var(--border);
     }
-    .action-bar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .action-bar-right { display: flex; align-items: center; gap: 8px; }
+
+    .action-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .status-text {
       font-size: 0.82rem;
       color: var(--text-muted);
       min-height: 20px;
       transition: color 0.2s;
     }
-    .status-text.analyzing { color: var(--primary); }
+
+    .status-text.analyzing {
+      color: var(--primary);
+    }
 
     /* ===== HISTORY ===== */
     .history-section {
@@ -647,6 +834,7 @@
       padding-top: 20px;
       border-top: 1px solid var(--border);
     }
+
     .history-header {
       display: flex;
       align-items: center;
@@ -654,12 +842,19 @@
       gap: 10px;
       margin-bottom: 12px;
     }
+
     .history-title {
       font-size: 0.88rem;
       font-weight: 700;
       color: var(--text-secondary);
     }
-    .history-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
     .history-item {
       width: 100%;
       text-align: left;
@@ -672,20 +867,24 @@
       font-size: 0.85rem;
       transition: all 0.2s;
     }
+
     .history-item:hover {
       border-color: var(--border-accent);
       background: var(--primary-soft);
     }
+
     .history-item strong {
       display: block;
       font-size: 0.85rem;
       font-weight: 700;
       margin-bottom: 2px;
     }
+
     .history-item span {
       font-size: 0.78rem;
       color: var(--text-muted);
     }
+
     .history-empty {
       color: var(--text-faint);
       font-size: 0.82rem;
@@ -697,6 +896,7 @@
     .results-panel {
       position: relative;
     }
+
     @media (min-width: 1080px) {
       .results-panel {
         position: sticky;
@@ -705,6 +905,7 @@
         overflow-y: auto;
       }
     }
+
     .results-header {
       display: flex;
       align-items: center;
@@ -713,7 +914,12 @@
       margin-bottom: 20px;
       flex-wrap: wrap;
     }
-    .results-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .results-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
 
     /* ===== EMPTY STATE ===== */
     .empty-state {
@@ -727,18 +933,21 @@
       border: 2px dashed var(--border);
       background: var(--gradient-subtle);
     }
+
     .empty-state svg {
       width: 48px;
       height: 48px;
       color: var(--text-faint);
       margin-bottom: 16px;
     }
+
     .empty-state h4 {
       font-size: 1rem;
       font-weight: 700;
       color: var(--text-secondary);
       margin-bottom: 6px;
     }
+
     .empty-state p {
       color: var(--text-muted);
       font-size: 0.88rem;
@@ -746,7 +955,11 @@
     }
 
     /* ===== DASHBOARD ===== */
-    .dashboard { display: flex; flex-direction: column; gap: 20px; }
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
     /* Score Section */
     .score-section {
@@ -754,9 +967,13 @@
       gap: 20px;
       align-items: stretch;
     }
+
     @media (max-width: 640px) {
-      .score-section { flex-direction: column; }
+      .score-section {
+        flex-direction: column;
+      }
     }
+
     .score-card {
       flex-shrink: 0;
       display: flex;
@@ -770,6 +987,7 @@
       text-align: center;
       min-width: 200px;
     }
+
     .score-ring {
       width: 140px;
       height: 140px;
@@ -777,14 +995,13 @@
       display: grid;
       place-items: center;
       position: relative;
-      background: conic-gradient(
-        var(--primary) 0deg,
-        var(--secondary) var(--angle, 0deg),
-        var(--surface-inset) var(--angle, 0deg),
-        var(--surface-inset) 360deg
-      );
+      background: conic-gradient(var(--primary) 0deg,
+          var(--secondary) var(--angle, 0deg),
+          var(--surface-inset) var(--angle, 0deg),
+          var(--surface-inset) 360deg);
       transition: --angle 0.8s ease;
     }
+
     .score-ring::before {
       content: "";
       position: absolute;
@@ -793,10 +1010,12 @@
       background: var(--surface);
       transition: background 0.3s;
     }
+
     .score-ring-inner {
       position: relative;
       z-index: 1;
     }
+
     .score-ring-inner strong {
       display: block;
       font-size: 2rem;
@@ -804,6 +1023,7 @@
       letter-spacing: -0.03em;
       line-height: 1;
     }
+
     .score-ring-inner span {
       display: block;
       font-size: 0.7rem;
@@ -813,6 +1033,7 @@
       letter-spacing: 0.08em;
       margin-top: 4px;
     }
+
     .confidence-badge {
       margin-top: 12px;
       padding: 5px 14px;
@@ -833,14 +1054,19 @@
       flex-direction: column;
       gap: 12px;
     }
+
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
+
     @media (max-width: 480px) {
-      .metrics-grid { grid-template-columns: 1fr; }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
     }
+
     .metric {
       padding: 14px;
       border-radius: var(--radius);
@@ -849,7 +1075,11 @@
       text-align: center;
       transition: border-color 0.2s;
     }
-    .metric:hover { border-color: var(--border-accent); }
+
+    .metric:hover {
+      border-color: var(--border-accent);
+    }
+
     .metric strong {
       display: block;
       font-size: 1.5rem;
@@ -857,14 +1087,24 @@
       letter-spacing: -0.02em;
       line-height: 1.2;
     }
+
     .metric span {
       font-size: 0.75rem;
       color: var(--text-muted);
       font-weight: 600;
     }
-    .metric.success strong { color: var(--success); }
-    .metric.warning strong { color: var(--warning); }
-    .metric.danger strong { color: var(--danger); }
+
+    .metric.success strong {
+      color: var(--success);
+    }
+
+    .metric.warning strong {
+      color: var(--warning);
+    }
+
+    .metric.danger strong {
+      color: var(--danger);
+    }
 
     /* Comparison Banner */
     .comparison-banner {
@@ -876,6 +1116,7 @@
       color: var(--text-secondary);
       line-height: 1.5;
     }
+
     .comparison-banner strong {
       display: block;
       font-size: 0.88rem;
@@ -891,7 +1132,11 @@
       border: 1px solid var(--border);
       transition: border-color 0.2s;
     }
-    .dash-card:hover { border-color: var(--border-accent); }
+
+    .dash-card:hover {
+      border-color: var(--border-accent);
+    }
+
     .dash-card h4 {
       font-size: 0.9rem;
       font-weight: 700;
@@ -901,22 +1146,32 @@
       align-items: center;
       gap: 8px;
     }
+
     .dash-card h4 .card-icon {
       width: 18px;
       height: 18px;
       color: var(--primary);
     }
+
     .dash-grid-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 14px;
     }
+
     @media (max-width: 640px) {
-      .dash-grid-2 { grid-template-columns: 1fr; }
+      .dash-grid-2 {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Suggestions */
-    .suggestion-list { display: flex; flex-direction: column; gap: 8px; }
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .suggestion-item {
       display: flex;
       align-items: center;
@@ -928,13 +1183,22 @@
       background: var(--surface);
       transition: border-color 0.2s;
     }
-    .suggestion-item:hover { border-color: var(--border-accent); }
-    .suggestion-item-text { min-width: 0; flex: 1; }
+
+    .suggestion-item:hover {
+      border-color: var(--border-accent);
+    }
+
+    .suggestion-item-text {
+      min-width: 0;
+      flex: 1;
+    }
+
     .suggestion-item-text strong {
       display: block;
       font-size: 0.85rem;
       font-weight: 700;
     }
+
     .suggestion-item-text span {
       display: block;
       font-size: 0.78rem;
@@ -944,7 +1208,12 @@
     }
 
     /* Tags */
-    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     .tag {
       display: inline-flex;
       align-items: center;
@@ -956,16 +1225,45 @@
       border: 1px solid var(--border);
       background: var(--surface);
       transition: all 0.2s;
+      line-height: 1.4;
+      max-width: 100%;
     }
-    .tag:hover { transform: translateY(-1px); }
+    .tag-text {
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tag:hover {
+      transform: translateY(-1px);
+    }
+
     .tag-weight {
       font-size: 0.7rem;
       font-weight: 800;
       opacity: 0.6;
+      flex-shrink: 0;
     }
-    .tag.high { background: var(--success-soft); color: var(--success); border-color: rgba(16,185,129,0.2); }
-    .tag.partial { background: var(--warning-soft); color: var(--warning); border-color: rgba(245,158,11,0.2); }
-    .tag.missing { background: var(--primary-soft); color: var(--secondary); border-color: rgba(139,92,246,0.2); }
+
+    .tag.high {
+      background: var(--success-soft);
+      color: var(--success);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .tag.partial {
+      background: var(--warning-soft);
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .tag.missing {
+      background: var(--primary-soft);
+      color: var(--secondary);
+      border-color: rgba(139, 92, 246, 0.2);
+    }
 
     /* Badges & Pills */
     .badge {
@@ -981,6 +1279,7 @@
       color: var(--primary);
       flex-shrink: 0;
     }
+
     .pill-score {
       padding: 5px 10px;
       border-radius: 999px;
@@ -991,17 +1290,38 @@
       border: 1px solid var(--border);
       white-space: nowrap;
     }
-    .risk-pill { padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
-    .risk-pill.high { background: var(--danger-soft); color: var(--danger); }
-    .risk-pill.medium { background: var(--warning-soft); color: var(--warning); }
-    .risk-pill.low { background: var(--success-soft); color: var(--success); }
+
+    .risk-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .risk-pill.high {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .risk-pill.medium {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .risk-pill.low {
+      background: var(--success-soft);
+      color: var(--success);
+    }
 
     /* Section Cards */
     .section-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
     }
+
     .section-card {
       padding: 14px;
       border-radius: var(--radius);
@@ -1009,15 +1329,31 @@
       background: var(--surface);
       transition: border-color 0.2s;
     }
-    .section-card:hover { border-color: var(--border-accent); }
+
+    .section-card:hover {
+      border-color: var(--border-accent);
+    }
+
     .section-card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 8px;
     }
-    .section-card-header strong { font-size: 0.82rem; font-weight: 700; }
-    .section-card-header .pill-score { font-size: 0.7rem; }
+
+    .section-card-header strong {
+      font-size: 0.82rem;
+      font-weight: 700;
+      min-width: 0;
+      flex: 1;
+      padding-right: 6px;
+    }
+
+    .section-card-header .pill-score {
+      font-size: 0.7rem;
+    }
+
     .section-bar {
       width: 100%;
       height: 4px;
@@ -1026,6 +1362,7 @@
       overflow: hidden;
       margin-bottom: 8px;
     }
+
     .section-bar span {
       display: block;
       height: 100%;
@@ -1033,6 +1370,7 @@
       background: var(--gradient);
       transition: width 0.6s ease;
     }
+
     .section-card em {
       font-style: normal;
       font-size: 0.75rem;
@@ -1053,9 +1391,22 @@
       background: var(--surface);
       transition: border-color 0.2s;
     }
-    .list-item:hover { border-color: var(--border-accent); }
-    .list-item-text { min-width: 0; flex: 1; }
-    .list-item-text strong { display: block; font-size: 0.85rem; font-weight: 700; }
+
+    .list-item:hover {
+      border-color: var(--border-accent);
+    }
+
+    .list-item-text {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .list-item-text strong {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
     .list-item-text em {
       font-style: normal;
       display: block;
@@ -1064,7 +1415,12 @@
       line-height: 1.4;
       margin-top: 2px;
     }
-    .list-stack { display: flex; flex-direction: column; gap: 8px; }
+
+    .list-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
     /* Importance Items */
     .importance-item {
@@ -1078,9 +1434,20 @@
       border: 1px solid var(--border);
       transition: border-color 0.2s;
     }
-    .importance-item:hover { border-color: var(--border-accent); }
-    .importance-item-text strong { font-size: 0.82rem; font-weight: 700; }
-    .importance-item-text span { font-size: 0.72rem; color: var(--text-muted); }
+
+    .importance-item:hover {
+      border-color: var(--border-accent);
+    }
+
+    .importance-item-text strong {
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .importance-item-text span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
 
     /* Resume Preview */
     .resume-preview {
@@ -1094,21 +1461,23 @@
       overflow: auto;
       font-size: 0.88rem;
     }
+
     mark.matched-word {
       color: inherit;
       border-radius: 4px;
       padding: 1px 4px;
-      background: rgba(16,185,129,0.15);
-      box-shadow: inset 0 0 0 1px rgba(16,185,129,0.25);
+      background: rgba(16, 185, 129, 0.15);
+      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25);
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
     }
+
     mark.partial-word {
       color: inherit;
       border-radius: 4px;
       padding: 1px 4px;
-      background: rgba(245,158,11,0.12);
-      box-shadow: inset 0 0 0 1px rgba(245,158,11,0.2);
+      background: rgba(245, 158, 11, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.2);
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
     }
@@ -1117,14 +1486,18 @@
     .loader-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 200;
     }
-    .loader-overlay.visible { display: flex; }
+
+    .loader-overlay.visible {
+      display: flex;
+    }
+
     .loader-card {
       width: min(380px, 90%);
       padding: 32px;
@@ -1134,6 +1507,7 @@
       box-shadow: var(--shadow-xl);
       text-align: center;
     }
+
     .spinner {
       width: 48px;
       height: 48px;
@@ -1144,8 +1518,17 @@
       border-right-color: var(--secondary);
       animation: spin 0.8s linear infinite;
     }
-    .loader-card strong { display: block; font-size: 1rem; margin-bottom: 6px; }
-    .loader-card p { color: var(--text-muted); font-size: 0.88rem; }
+
+    .loader-card strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .loader-card p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
 
     /* ===== FOOTER ===== */
     .footer {
@@ -1154,6 +1537,7 @@
       margin-top: auto;
       transition: border-color 0.3s;
     }
+
     .footer-inner {
       max-width: 1440px;
       margin: 0 auto;
@@ -1164,6 +1548,7 @@
       gap: 16px;
       flex-wrap: wrap;
     }
+
     .footer-brand {
       display: flex;
       align-items: center;
@@ -1172,9 +1557,23 @@
       font-weight: 700;
       color: var(--text-muted);
     }
-    .footer-brand-icon { width: 20px; height: 20px; }
-    .footer-brand-icon svg { width: 100%; height: 100%; }
-    .footer-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .footer-brand-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .footer-brand-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .footer-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .footer-chip {
       display: inline-flex;
       align-items: center;
@@ -1187,6 +1586,7 @@
       background: var(--surface-inset);
       border: 1px solid var(--border);
     }
+
     .footer-chip::before {
       content: "";
       width: 5px;
@@ -1196,214 +1596,454 @@
     }
 
     /* ===== ANIMATIONS & MOTION ===== */
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.7); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+      }
     }
+
     @keyframes bgFloat {
-      0% { opacity: 0.6; transform: translate(0, 0) scale(1); }
-      33% { opacity: 0.9; transform: translate(10px, -8px) scale(1.02); }
-      66% { opacity: 0.7; transform: translate(-8px, 5px) scale(0.99); }
-      100% { opacity: 0.6; transform: translate(0, 0) scale(1); }
+      0% {
+        opacity: 0.6;
+        transform: translate(0, 0) scale(1);
+      }
+
+      33% {
+        opacity: 0.9;
+        transform: translate(10px, -8px) scale(1.02);
+      }
+
+      66% {
+        opacity: 0.7;
+        transform: translate(-8px, 5px) scale(0.99);
+      }
+
+      100% {
+        opacity: 0.6;
+        transform: translate(0, 0) scale(1);
+      }
     }
+
     @keyframes progressPulse {
-      0%, 100% { width: 10%; }
-      50% { width: 80%; }
+
+      0%,
+      100% {
+        width: 10%;
+      }
+
+      50% {
+        width: 80%;
+      }
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(16px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
+
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-24px); }
-      to { opacity: 1; transform: translateX(0); }
+      from {
+        opacity: 0;
+        transform: translateX(-24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
+
     @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(24px); }
-      to { opacity: 1; transform: translateX(0); }
+      from {
+        opacity: 0;
+        transform: translateX(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
+
     @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.85); }
-      to { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(0.85);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
+
     @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.5); }
-      70% { transform: scale(1.05); }
-      100% { opacity: 1; transform: scale(1); }
+      0% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+
+      70% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
+
     @keyframes countUp {
-      from { opacity: 0; transform: scale(0.6) translateY(8px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
+      from {
+        opacity: 0;
+        transform: scale(0.6) translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
+
     @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
+
     @keyframes ringFill {
-      from { --angle: 0deg; }
+      from {
+        --angle: 0deg;
+      }
     }
+
     @keyframes ringPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.2); }
-      50% { box-shadow: 0 0 0 12px rgba(99,102,241,0); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2);
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(99, 102, 241, 0);
+      }
     }
+
     @keyframes barFill {
-      from { width: 0%; }
+      from {
+        width: 0%;
+      }
     }
+
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
     }
+
     @keyframes borderGlow {
-      0%, 100% { border-color: var(--border); }
-      50% { border-color: var(--border-accent); }
+
+      0%,
+      100% {
+        border-color: var(--border);
+      }
+
+      50% {
+        border-color: var(--border-accent);
+      }
     }
+
     @keyframes heroEntrance {
-      from { opacity: 0; transform: translateY(40px) scale(0.96); filter: blur(4px); }
-      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.96);
+        filter: blur(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
     }
+
     @keyframes tagPop {
-      0% { opacity: 0; transform: scale(0.6) translateY(8px); }
-      60% { transform: scale(1.08) translateY(-2px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
+      0% {
+        opacity: 0;
+        transform: scale(0.6) translateY(8px);
+      }
+
+      60% {
+        transform: scale(1.08) translateY(-2px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     /* Entrance classes */
-    .fade-in { animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .slide-up { animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .slide-up-1 { animation-delay: 0.08s; }
-    .slide-up-2 { animation-delay: 0.16s; }
-    .slide-up-3 { animation-delay: 0.24s; }
-    .slide-up-4 { animation-delay: 0.32s; }
-    .slide-up-5 { animation-delay: 0.4s; }
+    .fade-in {
+      animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .slide-up {
+      animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .slide-up-1 {
+      animation-delay: 0.08s;
+    }
+
+    .slide-up-2 {
+      animation-delay: 0.16s;
+    }
+
+    .slide-up-3 {
+      animation-delay: 0.24s;
+    }
+
+    .slide-up-4 {
+      animation-delay: 0.32s;
+    }
+
+    .slide-up-5 {
+      animation-delay: 0.4s;
+    }
 
     /* Scroll reveal (JS-driven) */
     .reveal {
       opacity: 0;
       transform: translateY(28px) scale(0.98);
       transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                  transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
+
     .reveal.visible {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+
     .reveal-left {
       opacity: 0;
       transform: translateX(-28px);
       transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                  transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+    .reveal-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
     .reveal-right {
       opacity: 0;
       transform: translateX(28px);
       transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                  transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
 
     /* Stagger delays for children */
-    .stagger > *:nth-child(1) { transition-delay: 0.04s; }
-    .stagger > *:nth-child(2) { transition-delay: 0.08s; }
-    .stagger > *:nth-child(3) { transition-delay: 0.12s; }
-    .stagger > *:nth-child(4) { transition-delay: 0.16s; }
-    .stagger > *:nth-child(5) { transition-delay: 0.2s; }
-    .stagger > *:nth-child(6) { transition-delay: 0.24s; }
-    .stagger > *:nth-child(7) { transition-delay: 0.28s; }
-    .stagger > *:nth-child(8) { transition-delay: 0.32s; }
+    .stagger>*:nth-child(1) {
+      transition-delay: 0.04s;
+    }
+
+    .stagger>*:nth-child(2) {
+      transition-delay: 0.08s;
+    }
+
+    .stagger>*:nth-child(3) {
+      transition-delay: 0.12s;
+    }
+
+    .stagger>*:nth-child(4) {
+      transition-delay: 0.16s;
+    }
+
+    .stagger>*:nth-child(5) {
+      transition-delay: 0.2s;
+    }
+
+    .stagger>*:nth-child(6) {
+      transition-delay: 0.24s;
+    }
+
+    .stagger>*:nth-child(7) {
+      transition-delay: 0.28s;
+    }
+
+    .stagger>*:nth-child(8) {
+      transition-delay: 0.32s;
+    }
 
     /* Hero animation */
-    .hero-eyebrow { animation: fadeIn 0.6s cubic-bezier(0.22,1,0.36,1) 0.1s both; }
-    .hero h1 { animation: heroEntrance 0.7s cubic-bezier(0.22,1,0.36,1) 0.2s both; }
-    .hero p { animation: fadeIn 0.6s cubic-bezier(0.22,1,0.36,1) 0.35s both; }
-    .hero-actions { animation: fadeIn 0.6s cubic-bezier(0.22,1,0.36,1) 0.45s both; }
+    .hero-eyebrow {
+      animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+    }
+
+    .hero h1 {
+      animation: heroEntrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+    }
+
+    .hero p {
+      animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+    }
+
+    .hero-actions {
+      animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
+    }
 
     /* Header entrance */
-    .header { animation: fadeIn 0.4s ease 0.05s both; }
+    .header {
+      animation: fadeIn 0.4s ease 0.05s both;
+    }
 
     /* Card hover micro-interaction */
     .dash-card {
-      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.3s ease,
-                  box-shadow 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
     }
+
     .dash-card:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-lg);
     }
+
     .section-card {
-      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.25s ease,
-                  box-shadow 0.25s ease;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
     }
+
     .section-card:hover {
       transform: translateY(-3px) scale(1.01);
       box-shadow: var(--shadow);
     }
+
     .list-item {
-      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.25s ease,
-                  box-shadow 0.25s ease,
-                  background 0.25s ease;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
     }
+
     .list-item:hover {
       transform: translateX(4px);
       box-shadow: var(--shadow-sm);
     }
+
     .suggestion-item {
-      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.25s ease,
-                  box-shadow 0.25s ease;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
     }
+
     .suggestion-item:hover {
       transform: translateX(4px);
       box-shadow: var(--shadow-sm);
     }
+
     .importance-item {
-      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.25s ease;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease;
     }
+
     .importance-item:hover {
       transform: translateX(4px);
     }
+
     .metric {
-      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.25s ease,
-                  box-shadow 0.25s ease;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
     }
+
     .metric:hover {
       transform: translateY(-3px) scale(1.03);
       box-shadow: var(--shadow);
     }
+
     .tag {
-      transition: transform 0.2s cubic-bezier(0.22,1,0.36,1),
-                  box-shadow 0.2s ease;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.2s ease;
     }
+
     .tag:hover {
       transform: translateY(-2px) scale(1.05);
       box-shadow: var(--shadow-sm);
     }
+
     .history-item {
-      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.25s ease,
-                  background 0.25s ease,
-                  box-shadow 0.25s ease;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease;
     }
+
     .history-item:hover {
       transform: translateX(6px);
       box-shadow: var(--shadow-sm);
     }
 
     /* Score ring glow animation */
-    .score-ring { animation: ringPulse 3s ease-in-out infinite; }
+    .score-ring {
+      animation: ringPulse 3s ease-in-out infinite;
+    }
 
     /* Score card floating effect */
-    .score-card { animation: float 5s ease-in-out infinite; }
+    .score-card {
+      animation: float 5s ease-in-out infinite;
+    }
 
     /* Panel entrance */
     .panel {
@@ -1414,22 +2054,28 @@
     .editor-shell {
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
+
     .editor-shell:focus-within {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--input-focus-ring), 0 0 20px rgba(99,102,241,0.08);
+      box-shadow: 0 0 0 3px var(--input-focus-ring), 0 0 20px rgba(99, 102, 241, 0.08);
     }
 
     /* Loader card entrance */
     .loader-overlay.visible .loader-card {
-      animation: scaleIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+      animation: scaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     /* Footer entrance */
-    .footer { animation: fadeIn 0.5s ease 0.6s both; }
+    .footer {
+      animation: fadeIn 0.5s ease 0.6s both;
+    }
 
     /* Reduced motion preference */
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
+
+      *,
+      *::before,
+      *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
@@ -1437,46 +2083,128 @@
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-      .app-main { padding: 0 16px; }
-      .hero { padding: 32px 0 24px; }
-      .hero h1 { font-size: 1.6rem; }
-      .hero p { font-size: 0.92rem; }
-      .panel { padding: 20px; border-radius: var(--radius-xl); }
-      .score-section { flex-direction: column; }
-      .metrics-grid { grid-template-columns: repeat(3, 1fr); }
-      .dash-grid-2 { grid-template-columns: 1fr; }
-      .section-grid { grid-template-columns: 1fr 1fr; }
-      .action-bar { padding: 14px 16px; }
-      .action-bar-left { gap: 10px; }
+      .app-main {
+        padding: 0 16px;
+      }
+
+      .hero {
+        padding: 32px 0 24px;
+      }
+
+      .hero h1 {
+        font-size: 1.6rem;
+      }
+
+      .hero p {
+        font-size: 0.92rem;
+      }
+
+      .panel {
+        padding: 20px;
+        border-radius: var(--radius-xl);
+      }
+
+      .score-section {
+        flex-direction: column;
+      }
+
+      .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .dash-grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .section-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .action-bar {
+        padding: 14px 16px;
+      }
+
+      .action-bar-left {
+        gap: 10px;
+      }
     }
+
     @media (max-width: 480px) {
-      .app-main { padding: 0 12px; }
-      .header-inner { padding: 0 12px; height: 56px; }
-      .hero { padding: 24px 0 16px; }
-      .panel { padding: 16px; border-radius: var(--radius-lg); }
-      .metrics-grid { grid-template-columns: 1fr 1fr 1fr; }
-      .section-grid { grid-template-columns: 1fr; }
-      .hero-actions { flex-direction: column; align-items: stretch; }
-      .hero-actions .btn { justify-content: center; }
+      .app-main {
+        padding: 0 12px;
+      }
+
+      .header-inner {
+        padding: 0 12px;
+        height: 56px;
+      }
+
+      .hero {
+        padding: 24px 0 16px;
+      }
+
+      .panel {
+        padding: 16px;
+        border-radius: var(--radius-lg);
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hero-actions .btn {
+        justify-content: center;
+      }
+
       .action-bar {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
         padding: 14px;
       }
+
       .action-bar-left {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
       }
+
       .action-bar-left .btn:first-child {
         grid-column: 1 / -1;
       }
-      .action-bar-right { justify-content: center; }
-      .footer-inner { flex-direction: column; text-align: center; }
-      .results-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .results-actions { width: 100%; }
-      .results-actions .btn { flex: 1; justify-content: center; }
+
+      .action-bar-right {
+        justify-content: center;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .results-actions {
+        width: 100%;
+      }
+
+      .results-actions .btn {
+        flex: 1;
+        justify-content: center;
+      }
     }
 
     .sr-only {
@@ -1486,12 +2214,13 @@
       padding: 0;
       margin: -1px;
       overflow: hidden;
-      clip: rect(0,0,0,0);
+      clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border: 0;
     }
   </style>
 </head>
+
 <body>
   <!-- Loader Overlay -->
   <div class="loader-overlay" id="loaderOverlay" aria-hidden="true">
@@ -1511,12 +2240,13 @@
             <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#6366f1"/>
-                  <stop offset="100%" stop-color="#8b5cf6"/>
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="100%" stop-color="#8b5cf6" />
                 </linearGradient>
               </defs>
-              <circle cx="64" cy="64" r="58" fill="none" stroke="url(#brandGrad)" stroke-width="6"/>
-              <path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(#brandGrad)" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="64" cy="64" r="58" fill="none" stroke="url(#brandGrad)" stroke-width="6" />
+              <path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(#brandGrad)" stroke-width="9" fill="none"
+                stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </span>
           <span class="brand-name">MatchlyPro</span>
@@ -1525,11 +2255,21 @@
         <div class="header-actions">
           <span class="rt-indicator" id="rtIndicator">Real-time</span>
           <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
-            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
             </svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
             </svg>
           </button>
         </div>
@@ -1541,14 +2281,24 @@
       <section class="hero">
         <div class="hero-eyebrow">Premium Resume Matching</div>
         <h1>Match Your Resume <span>Perfectly</span></h1>
-        <p>Paste a job description and your resume. Get instant keyword analysis, ATS risk detection, and actionable suggestions.</p>
+        <p>Paste a job description and your resume. Get instant keyword analysis, ATS risk detection, and actionable
+          suggestions.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" id="heroStartBtn" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
             Start Analysis
           </button>
           <button class="btn btn-secondary" id="heroDemoBtn" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
             Try Demo
           </button>
         </div>
@@ -1573,7 +2323,8 @@
                 <span class="field-count" id="jdCount">0 chars</span>
               </div>
               <div class="editor-shell">
-                <textarea id="jobDescription" placeholder="Paste the target job description here..." rows="8"></textarea>
+                <textarea id="jobDescription" placeholder="Paste the target job description here..."
+                  rows="8"></textarea>
               </div>
             </div>
 
@@ -1585,22 +2336,25 @@
               </div>
               <input id="resumePdfInput" type="file" accept="application/pdf,.pdf" hidden />
               <div class="editor-shell" id="resumeEditorShell">
-                <textarea id="resumeText" placeholder="Paste your resume text here or upload a PDF..." rows="8"></textarea>
+                <textarea id="resumeText" placeholder="Paste your resume text here or upload a PDF..."
+                  rows="8"></textarea>
                 <div class="drag-hint" id="dragHint" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <polyline points="9 15 12 12 15 15"/>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="12" y1="18" x2="12" y2="12" />
+                    <polyline points="9 15 12 12 15 15" />
                   </svg>
                   <div class="drag-hint-text">Drop your PDF here</div>
                   <div class="drag-hint-sub">We'll extract the text automatically</div>
                 </div>
                 <div class="editor-footer">
                   <button class="upload-btn" id="resumeUploadBtn" type="button" aria-label="Upload PDF resume">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <span class="btn-text">Upload PDF</span>
                     <div class="upload-progress"></div>
@@ -1615,7 +2369,10 @@
           <div class="action-bar">
             <div class="action-bar-left">
               <button class="btn btn-primary btn-sm" id="analyzeBtn" type="button">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
                 Analyze Match
               </button>
               <button class="btn btn-secondary btn-sm" id="demoBtn" type="button">Demo Data</button>
@@ -1650,8 +2407,9 @@
           </div>
           <div id="resultsContainer">
             <div class="empty-state">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
               <h4>No analysis yet</h4>
               <p>Add a job description and resume, then click Analyze Match to see results.</p>
@@ -1669,12 +2427,13 @@
             <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="footerGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#6366f1"/>
-                  <stop offset="100%" stop-color="#8b5cf6"/>
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="100%" stop-color="#8b5cf6" />
                 </linearGradient>
               </defs>
-              <circle cx="64" cy="64" r="58" fill="none" stroke="url(#footerGrad)" stroke-width="8"/>
-              <path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(#footerGrad)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="64" cy="64" r="58" fill="none" stroke="url(#footerGrad)" stroke-width="8" />
+              <path d="M30 90 L30 40 L64 75 L98 40 L98 90" stroke="url(#footerGrad)" stroke-width="10" fill="none"
+                stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </span>
           MatchlyPro
@@ -1691,56 +2450,71 @@
   <script>
     // ===== CONSTANTS =====
     const stopwords = new Set([
-      "a","about","above","after","again","against","all","am","an","and","any","are","as","at",
-      "be","because","been","before","being","below","between","both","but","by","can","cannot",
-      "could","did","do","does","doing","down","during","each","few","for","from","further","had",
-      "has","have","having","he","her","here","hers","herself","him","himself","his","how","i","if",
-      "in","into","is","it","its","itself","just","me","more","most","my","myself","no","nor","not",
-      "of","off","on","once","only","or","other","our","ours","ourselves","out","over","own","same",
-      "she","should","so","some","such","than","that","the","their","theirs","them","themselves",
-      "then","there","these","they","this","those","through","to","too","under","until","up","very",
-      "was","we","were","what","when","where","which","while","who","whom","why","with","would",
-      "you","your","yours","yourself","yourselves"
+      "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at",
+      "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can", "cannot",
+      "could", "did", "do", "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had",
+      "has", "have", "having", "he", "her", "here", "hers", "herself", "him", "himself", "his", "how", "i", "if",
+      "in", "into", "is", "it", "its", "itself", "just", "me", "more", "most", "my", "myself", "no", "nor", "not",
+      "of", "off", "on", "once", "only", "or", "other", "our", "ours", "ourselves", "out", "over", "own", "same",
+      "she", "should", "so", "some", "such", "than", "that", "the", "their", "theirs", "them", "themselves",
+      "then", "there", "these", "they", "this", "those", "through", "to", "too", "under", "until", "up", "very",
+      "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", "why", "with", "would",
+      "you", "your", "yours", "yourself", "yourselves", "seeking", "looking", "role", "position", "job",
+      "candidate", "ideal", "responsibilities", "responsibility", "requirements", "requirement", "required",
+      "require", "preferred", "plus", "must", "need", "needs", "needed", "work", "working", "ability", "able",
+      "strong", "excellent", "good", "project", "projects", "service", "services", "support", "including",
+      "ensure", "provided", "provide", "providing", "focus", "focused", "following", "deliverables",
+      "deliverable", "consist", "consists", "month", "months", "maximum", "word", "count", "creative",
+      "talented", "ongoing", "primary", "specific", "accurate"
     ]);
 
     const synonymMap = {
-      javascript:"javascript",js:"javascript",ecmascript:"javascript",reactjs:"react",react:"react",
-      nodejs:"node",node:"node",leadership:"lead",leading:"lead",led:"lead",manager:"manage",
-      managing:"manage",management:"manage",develop:"develop",developer:"develop",development:"develop",
-      developing:"develop",engineered:"engineer",engineering:"engineer",engineer:"engineer",
-      analysis:"analyze",analytical:"analyze",analyzing:"analyze",analyzed:"analyze",
-      architect:"architecture",architectural:"architecture",designing:"design",designer:"design",
-      designed:"design",scalable:"scale",scaling:"scale",scaled:"scale",automation:"automate",
-      automated:"automate",automating:"automate",collaboration:"collaborate",collaborative:"collaborate",
-      collaborating:"collaborate",stakeholder:"stakeholder",stakeholders:"stakeholder",
-      sql:"sql",nosql:"nosql",ai:"artificialintelligence",ml:"machinelearning",aws:"aws",
-      azure:"azure",gcp:"gcp",kubernetes:"kubernetes",k8s:"kubernetes",
-      microservices:"microservice",microservice:"microservice",api:"api",apis:"api",
-      restful:"rest",rest:"rest",ci:"cicd",cd:"cicd",cicd:"cicd"
+      javascript: "javascript", js: "javascript", ecmascript: "javascript", reactjs: "react", react: "react",
+      nodejs: "node", node: "node", leadership: "lead", leading: "lead", led: "lead", manager: "manage",
+      managing: "manage", management: "manage", develop: "develop", developer: "develop", development: "develop",
+      developing: "develop", engineered: "engineer", engineering: "engineer", engineer: "engineer",
+      analysis: "analyze", analytical: "analyze", analyzing: "analyze", analyzed: "analyze",
+      architect: "architecture", architectural: "architecture", designing: "design", designer: "design",
+      designed: "design", scalable: "scale", scaling: "scale", scaled: "scale", automation: "automate",
+      automated: "automate", automating: "automate", collaboration: "collaborate", collaborative: "collaborate",
+      collaborating: "collaborate", stakeholder: "stakeholder", stakeholders: "stakeholder",
+      sql: "sql", nosql: "nosql", ai: "artificialintelligence", ml: "machinelearning", aws: "aws",
+      azure: "azure", gcp: "gcp", kubernetes: "kubernetes", k8s: "kubernetes",
+      microservices: "microservice", microservice: "microservice", api: "api", apis: "api",
+      restful: "rest", rest: "rest", ci: "cicd", cd: "cicd", cicd: "cicd",
+      translation: "translate", translator: "translate", translating: "translate",
+      writing: "write", writer: "write", written: "write", localized: "localize", localization: "localize",
+      dialects: "dialect", carousels: "carousel", stories: "story", videos: "video"
     };
 
     const technicalHints = new Set([
-      "javascript","typescript","python","java","react","node","sql","nosql","aws","azure","gcp",
-      "docker","kubernetes","terraform","graphql","rest","api","microservice","analytics",
-      "architecture","automation","security","testing","cicd","machinelearning",
-      "artificialintelligence","lead","stakeholder"
+      "javascript", "typescript", "python", "java", "react", "node", "sql", "nosql", "aws", "azure", "gcp",
+      "docker", "kubernetes", "terraform", "graphql", "rest", "api", "microservice", "analytics",
+      "architecture", "automation", "security", "testing", "cicd", "machinelearning",
+      "artificialintelligence", "lead", "stakeholder"
     ]);
 
     const categoryHints = {
-      technical: new Set(["javascript","typescript","python","java","react","node","sql","nosql","graphql","rest","api","docker","kubernetes","terraform","microservice","architecture","testing","security","analytics","machinelearning","artificialintelligence"]),
-      tools: new Set(["aws","azure","gcp","docker","kubernetes","terraform","graphql","sql","nosql","cicd","api","rest"]),
-      leadership: new Set(["lead","manage","stakeholder","mentor","ownership","strategy","roadmap","collaborate"]),
-      soft: new Set(["communication","problem","collaborate","adaptability","judgment","leadership","stakeholder"]),
-      domain: new Set(["saas","platform","product","customer","dashboard","reporting","kpi","workflow","compliance","finance","healthcare"])
+      technical: new Set(["javascript", "typescript", "python", "java", "react", "node", "sql", "nosql", "graphql", "rest", "api", "docker", "kubernetes", "terraform", "microservice", "architecture", "testing", "security", "analytics", "machinelearning", "artificialintelligence"]),
+      tools: new Set(["aws", "azure", "gcp", "docker", "kubernetes", "terraform", "graphql", "sql", "nosql", "cicd", "api", "rest"]),
+      leadership: new Set(["lead", "manage", "stakeholder", "mentor", "ownership", "strategy", "roadmap", "collaborate"]),
+      soft: new Set(["communication", "problem", "collaborate", "adaptability", "judgment", "leadership", "stakeholder"]),
+      domain: new Set(["saas", "platform", "product", "customer", "dashboard", "reporting", "kpi", "workflow", "compliance", "finance", "healthcare"]),
+      language: new Set(["translate", "arabic", "english", "dialect", "bahraini", "localize", "proofread", "linguistic"]),
+      content: new Set(["content", "write", "copywriting", "copywriter", "social", "media", "carousel", "story", "audience", "tone", "brand", "creative"]),
+      operations: new Set(["operations", "coordination", "coordinator", "admin", "administration", "scheduling", "documentation", "process"]),
+      people: new Set(["recruitment", "hiring", "talent", "training", "onboarding", "hr", "humanresources"]),
+      sales: new Set(["sales", "crm", "pipeline", "prospecting", "negotiation", "revenue", "client"]),
+      design: new Set(["design", "figma", "wireframe", "prototype", "ux", "ui", "research"])
     };
 
     const weakPhrases = [
-      "responsible for","helped with","worked on","involved in","participated in","tasked with","assisted with"
+      "responsible for", "helped with", "worked on", "involved in", "participated in", "tasked with", "assisted with"
     ];
 
     const strongActionVerbs = new Set([
-      "built","led","shipped","optimized","automated","reduced","improved","delivered","designed",
-      "scaled","implemented","launched","owned","migrated","resolved","drove"
+      "built", "led", "shipped", "optimized", "automated", "reduced", "improved", "delivered", "designed",
+      "scaled", "implemented", "launched", "owned", "migrated", "resolved", "drove"
     ]);
 
     const demoScenarios = [
@@ -1845,6 +2619,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     let lastDemoIndex = -1;
     let lastAnalysis = null;
     let rtDebounce = null;
+    let aiConfig = { enabled: false, provider: "AI", model: "" };
     const memoryStore = new Map();
 
     // ===== STORAGE =====
@@ -1861,18 +2636,75 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
 
     // ===== UTILITIES =====
     function escapeHtml(v) {
-      return v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
     function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+
+    function buildMatchSetsFromAnalysis(analysis) {
+      const matched = new Set();
+      const partial = new Set();
+
+      (analysis.highMatch || []).forEach(item => {
+        preprocessText(item.term || "").forEach(token => matched.add(token.normalized));
+      });
+
+      (analysis.partialMatch || []).forEach(item => {
+        preprocessText(`${item.term || ""} ${item.resumeTerm || ""}`).forEach(token => partial.add(token.normalized));
+      });
+
+      return { matched, partial };
+    }
+
+    function hydrateAnalysis(analysis, resumeText) {
+      const safeAnalysis = {
+        ...analysis,
+        highMatch: Array.isArray(analysis.highMatch) ? analysis.highMatch : [],
+        partialMatch: Array.isArray(analysis.partialMatch) ? analysis.partialMatch : [],
+        missing: Array.isArray(analysis.missing) ? analysis.missing : [],
+        topKeywords: Array.isArray(analysis.topKeywords) ? analysis.topKeywords : [],
+        keywordCategories: Array.isArray(analysis.keywordCategories) ? analysis.keywordCategories : [],
+        jdInsights: Array.isArray(analysis.jdInsights) ? analysis.jdInsights : [],
+        atsRisks: Array.isArray(analysis.atsRisks) ? analysis.atsRisks : [],
+        sectionAnalysis: Array.isArray(analysis.sectionAnalysis) ? analysis.sectionAnalysis : [],
+        experienceSignals: Array.isArray(analysis.experienceSignals) ? analysis.experienceSignals : [],
+        suggestions: Array.isArray(analysis.suggestions) ? analysis.suggestions : []
+      };
+
+      const sets = buildMatchSetsFromAnalysis(safeAnalysis);
+      return {
+        ...safeAnalysis,
+        stats: {
+          highCount: safeAnalysis.highMatch.length,
+          partialCount: safeAnalysis.partialMatch.length,
+          missingCount: safeAnalysis.missing.length
+        },
+        highlightedResumeHtml: safeAnalysis.highlightedResumeHtml || highlightResume(resumeText, sets.matched, sets.partial)
+      };
+    }
+
+    async function fetchAiConfig() {
+      try {
+        const res = await fetch("/api/config", { headers: { "Accept": "application/json" } });
+        if (!res.ok) throw new Error("Config unavailable");
+        const data = await res.json();
+        aiConfig = {
+          enabled: Boolean(data.enabled),
+          provider: data.provider || "AI",
+          model: data.model || ""
+        };
+      } catch {
+        aiConfig = { enabled: false, provider: "AI", model: "" };
+      }
+    }
 
     // ===== TEXT PROCESSING =====
     function basicStem(word) {
       if (word.length <= 3) return word;
       const rules = [
-        [/ments$/i,"ment"],[/ations$/i,"ate"],[/izers$/i,"ize"],[/iness$/i,"y"],[/ingly$/i,""],
-        [/edly$/i,""],[/ation$/i,"ate"],[/ition$/i,"ite"],[/ments?$/i,""],[/ships?$/i,""],
-        [/ances?$/i,""],[/ences?$/i,""],[/izers?$/i,"ize"],[/isers?$/i,"ize"],[/ities$/i,"ity"],
-        [/ing$/i,""],[/ied$/i,"y"],[/ies$/i,"y"],[/ed$/i,""],[/ers$/i,"er"],[/er$/i,""],[/s$/i,""]
+        [/ments$/i, "ment"], [/ations$/i, "ate"], [/izers$/i, "ize"], [/iness$/i, "y"], [/ingly$/i, ""],
+        [/edly$/i, ""], [/ation$/i, "ate"], [/ition$/i, "ite"], [/ments?$/i, ""], [/ships?$/i, ""],
+        [/ances?$/i, ""], [/ences?$/i, ""], [/izers?$/i, "ize"], [/isers?$/i, "ize"], [/ities$/i, "ity"],
+        [/ing$/i, ""], [/ied$/i, "y"], [/ies$/i, "y"], [/ed$/i, ""], [/ers$/i, "er"], [/er$/i, ""], [/s$/i, ""]
       ];
       let s = word;
       for (const [p, r] of rules) {
@@ -1953,7 +2785,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       for (let j = 0; j <= b.length; j++) m[0][j] = j;
       for (let i = 1; i <= a.length; i++)
         for (let j = 1; j <= b.length; j++)
-          m[i][j] = Math.min(m[i-1][j]+1, m[i][j-1]+1, m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+          m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
       return m[a.length][b.length];
     }
 
@@ -1973,24 +2805,53 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     }
 
     function categorizeKeyword(term) {
+      if (categoryHints.language.has(term)) return "Language & Localization";
+      if (categoryHints.content.has(term)) return "Content & Messaging";
+      if (categoryHints.operations.has(term)) return "Operations";
+      if (categoryHints.people.has(term)) return "People & Hiring";
+      if (categoryHints.sales.has(term)) return "Sales & Client Work";
+      if (categoryHints.design.has(term)) return "Design";
       if (categoryHints.technical.has(term)) return "Technical Skills";
       if (categoryHints.tools.has(term)) return "Tools & Platforms";
       if (categoryHints.leadership.has(term)) return "Leadership";
       if (categoryHints.soft.has(term)) return "Soft Skills";
       if (categoryHints.domain.has(term)) return "Domain Terms";
-      if (term.length > 8) return "Technical Skills";
+      if (term.length > 8) return "Specialized Terms";
       return "General Fit";
+    }
+
+    function categorizeEntryText(text) {
+      const tokens = preprocessText(String(text));
+      if (!tokens.length) return categorizeKeyword(normalizeToken(String(text)));
+      const counts = new Map();
+      tokens.forEach(token => {
+        const cat = categorizeKeyword(token.normalized);
+        counts.set(cat, (counts.get(cat) || 0) + 1);
+      });
+      const preferred = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .find(([cat]) => cat !== "General Fit");
+      return preferred?.[0] || (tokens.length > 1 ? "Specialized Terms" : "General Fit");
     }
 
     function detectRoleFamily(text) {
       const s = text.toLowerCase();
+      if (/translation|translator|localization|arabic|bahraini|dialect/.test(s)) return "Translation / Localization";
+      if (/content writer|copywriter|copywriting|content writing|social media content|editorial/.test(s)) return "Content / Copywriting";
+      if (/customer support|customer service|support specialist|help desk/.test(s)) return "Customer Support";
+      if (/recruiter|recruitment|talent acquisition|human resources|hr /.test(s)) return "People / HR";
+      if (/sales|business development|account executive|lead generation/.test(s)) return "Sales / Business Development";
+      if (/operations|coordinator|administrator|administrative|virtual assistant/.test(s)) return "Operations / Administration";
+      if (/designer|ux|ui|figma|product design/.test(s)) return "Design";
+      if (/teacher|instructor|curriculum|education|tutor/.test(s)) return "Education";
+      if (/marketing|seo|campaign|brand|growth/.test(s)) return "Marketing";
       if (/devops|infrastructure|platform|cloud/.test(s)) return "DevOps / Platform";
       if (/frontend|front-end|react|ui/.test(s)) return "Frontend Engineering";
       if (/backend|api|microservice|server/.test(s)) return "Backend Engineering";
       if (/full-stack|full stack/.test(s)) return "Full-Stack Engineering";
       if (/data analyst|analytics|bi|dashboard|sql/.test(s)) return "Data / Analytics";
       if (/product manager|roadmap|stakeholder/.test(s)) return "Product / Delivery";
-      return "General Technology";
+      return "General Professional";
     }
 
     function detectSeniority(text) {
@@ -2000,6 +2861,163 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       if (/mid|intermediate/.test(s)) return "Mid-level";
       if (/junior|entry/.test(s)) return "Junior";
       return "Unspecified";
+    }
+
+    function normalizeLine(line) {
+      return line.replace(/\s+/g, " ").replace(/^[\W_]+|[\W_]+$/g, "").trim();
+    }
+
+    function isResumeSectionHeading(line) {
+      return /^(professional summary|summary|profile|experience highlights|experience|employment|work history|projects|project highlights|skills|additional skills|technical skills|core skills|education|academic|certifications|certificates)$/i.test(line);
+    }
+
+    function extractResumeIdentity(resume) {
+      const lines = resume.replace(/\r/g, "").split("\n").map(normalizeLine).filter(Boolean);
+      for (const line of lines.slice(0, 8)) {
+        const words = line.split(/\s+/).filter(Boolean);
+        if (line.length > 60 || words.length < 2 || words.length > 5) continue;
+        if (/@|https?:\/\/|www\.|\d{3,}/i.test(line)) continue;
+        if (isResumeSectionHeading(line)) continue;
+        if (!/^[A-Za-z][A-Za-z\s.'-]+$/.test(line)) continue;
+        return line;
+      }
+      return "";
+    }
+
+    function extractJobTitle(jd) {
+      const lines = jd.replace(/\r/g, "").split("\n").map(normalizeLine).filter(Boolean);
+      for (const line of lines.slice(0, 12)) {
+        if (line.length > 90) continue;
+        const explicit = /^(job title|title|role|position)\s*:\s*(.+)$/i.exec(line);
+        if (explicit?.[2]) return explicit[2].trim();
+        if (/responsibilities|requirements|about the role|about us|company overview/i.test(line)) continue;
+        if (/engineer|developer|analyst|manager|designer|specialist|consultant|administrator|architect|lead|intern|director|officer|coordinator|scientist|translator|writer|copywriter|marketer|recruiter|freelancer|assistant/i.test(line)) {
+          return line;
+        }
+      }
+      return "";
+    }
+
+    function buildSessionMeta(jd, resume) {
+      const roleTitle = extractJobTitle(jd);
+      const resumeIdentity = extractResumeIdentity(resume);
+      const roleFamily = detectRoleFamily(jd);
+      const label = resumeIdentity && roleTitle
+        ? `${resumeIdentity} - ${roleTitle}`
+        : roleTitle || resumeIdentity || `${roleFamily} Session`;
+      return {
+        label,
+        roleFamily,
+        roleTitle: roleTitle || roleFamily
+      };
+    }
+
+    function getRoleAlignmentPattern(roleFamily) {
+      const patterns = {
+        "Translation / Localization": /translate|translation|translator|arabic|english|dialect|localiz|linguistic|proofread|bilingual/,
+        "Content / Copywriting": /content|copy|writer|writing|editorial|social media|audience|tone|campaign|brand/,
+        "Customer Support": /support|customer|ticket|help desk|resolution|client/,
+        "People / HR": /recruit|hiring|talent|onboarding|hr|human resources|sourcing/,
+        "Sales / Business Development": /sales|pipeline|lead generation|prospecting|client|revenue|closing/,
+        "Operations / Administration": /operations|admin|coordination|documentation|scheduling|process/,
+        "Design": /design|figma|prototype|wireframe|ux|ui|research/,
+        "Education": /teach|training|curriculum|instructor|education|student/,
+        "Marketing": /marketing|seo|campaign|brand|growth|content/,
+        "DevOps / Platform": /devops|cloud|infrastructure|kubernetes|docker|terraform/,
+        "Frontend Engineering": /frontend|javascript|react|ui|css|html/,
+        "Backend Engineering": /backend|api|server|node|microservice|database/,
+        "Full-Stack Engineering": /frontend|backend|javascript|api|product/,
+        "Data / Analytics": /sql|dashboard|analytics|reporting|kpi|experiment/,
+        "Product / Delivery": /product|roadmap|stakeholder|delivery|prioritization/
+      };
+      return patterns[roleFamily] || null;
+    }
+
+    function splitIntoSegments(text) {
+      return text
+        .replace(/\r/g, "\n")
+        .split(/\n+|[.;]|•|\s[-*]\s/)
+        .map(normalizeLine)
+        .filter(segment => segment.length >= 8);
+    }
+
+    function buildResumeSegments(text) {
+      return splitIntoSegments(text).map(segment => {
+        const tokens = preprocessText(segment).map(t => t.normalized);
+        return {
+          text: segment,
+          tokens,
+          tokenSet: new Set(tokens),
+          normalizedText: tokens.join(" ")
+        };
+      }).filter(segment => segment.tokens.length);
+    }
+
+    function extractPhraseCandidates(text, weights) {
+      const phraseMap = new Map();
+      const segments = splitIntoSegments(text);
+
+      segments.forEach(segment => {
+        const rawWords = segment.match(/[A-Za-z][A-Za-z+#.]*/g) || [];
+        const words = rawWords
+          .map(raw => ({ raw, normalized: normalizeToken(raw) }))
+          .filter(word => word.normalized && !stopwords.has(word.normalized) && word.normalized.length >= 3);
+
+        for (let size = 2; size <= 4; size++) {
+          for (let i = 0; i <= words.length - size; i++) {
+            const slice = words.slice(i, i + size);
+            const key = slice.map(word => word.normalized).join(" ");
+            const categories = slice.map(word => categorizeKeyword(word.normalized));
+            const specialized = categories.some(cat => cat !== "General Fit");
+            const longEnough = slice.some(word => word.normalized.length >= 6);
+            if (!specialized && !longEnough) continue;
+
+            const display = slice.map(word => word.raw).join(" ");
+            const baseWeight = slice.reduce((sum, word) => sum + (weights.get(word.normalized)?.weight || 7), 0);
+            const weight = baseWeight * (1.12 + (size - 2) * 0.18) * (specialized ? 1.12 : 1);
+            const existing = phraseMap.get(key);
+
+            if (!existing || weight > existing.weight) {
+              phraseMap.set(key, {
+                term: display,
+                normalized: key,
+                tokens: slice.map(word => word.normalized),
+                weight
+              });
+            }
+          }
+        }
+      });
+
+      return [...phraseMap.values()]
+        .sort((a, b) => b.weight - a.weight || b.tokens.length - a.tokens.length)
+        .filter((item, index, list) => !list.slice(0, index).some(prev => prev.normalized.includes(item.normalized) && prev.weight >= item.weight))
+        .slice(0, 18);
+    }
+
+    function getBestPhraseMatch(phrase, resumeSegments) {
+      let best = null;
+      const bigrams = phrase.tokens.slice(1).map((token, i) => `${phrase.tokens[i]} ${token}`);
+
+      resumeSegments.forEach(segment => {
+        const overlap = phrase.tokens.filter(token => segment.tokenSet.has(token)).length;
+        if (!overlap) return;
+
+        const coverage = overlap / phrase.tokens.length;
+        const exact = segment.normalizedText.includes(phrase.normalized);
+        const bigramHits = bigrams.filter(bigram => segment.normalizedText.includes(bigram)).length;
+        const orderScore = bigrams.length ? bigramHits / bigrams.length : coverage;
+        const score = exact ? 1 : (coverage * 0.78 + orderScore * 0.22);
+
+        if (!best || score > best.score) {
+          best = {
+            score,
+            evidence: segment.text
+          };
+        }
+      });
+
+      return best;
     }
 
     function highlightResume(text, matched, partial) {
@@ -2052,7 +3070,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     function buildKeywordCategories(topKeywords, missing, highMatch) {
       const cats = new Map();
       [...topKeywords.slice(0, 16), ...missing.slice(0, 10), ...highMatch.slice(0, 10)].forEach(item => {
-        const cat = categorizeKeyword(normalizeToken(item.term));
+        const cat = categorizeEntryText(item.term);
         if (!cats.has(cat)) cats.set(cat, { label: cat, top: [], matched: 0, total: 0 });
         const t = cats.get(cat);
         t.total += 1;
@@ -2063,23 +3081,24 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     }
 
     function buildJdInsights(jd, topKeywords, missing) {
+      const roleTitle = extractJobTitle(jd) || detectRoleFamily(jd);
       return [
+        { title: "Role Title", detail: roleTitle, note: "Picked from the clearest title language in the JD." },
         { title: "Role Family", detail: detectRoleFamily(jd), note: "Detected from the strongest role language." },
         { title: "Seniority", detail: detectSeniority(jd), note: "Estimated from title and expectation wording." },
         { title: "Top Requirements", detail: topKeywords.slice(0, 5).map(i => i.term).join(", "), note: "These terms carry the most weight." },
-        { title: "Biggest Gaps", detail: missing.slice(0, 4).map(i => i.term).join(", ") || "No major gaps", note: "Clearest areas to improve." },
-        { title: "Repeated Themes", detail: topKeywords.slice(0, 6).map(i => i.term).join(", "), note: "These themes shape the role most strongly." }
-      ];
+        { title: "Biggest Gaps", detail: missing.slice(0, 4).map(i => i.term).join(", ") || "No major gaps", note: "Clearest areas to improve." }
+      ].slice(0, 5);
     }
 
     function buildSectionAnalysis(resume, weights, missing) {
       return parseResumeSections(resume).map(section => {
         const score = scoreTextAgainstWeights(section.content, weights);
         const suggested = missing.find(item => {
-          const cat = categorizeKeyword(normalizeToken(item.term));
-          if (section.name === "Skills" && /Technical|Tools/.test(cat)) return true;
-          if (section.name === "Experience" && /Leadership|General|Technical/.test(cat)) return true;
-          if (section.name === "Summary") return true;
+          const cat = categorizeEntryText(item.term);
+          if (section.name === "Skills" && /(Technical|Tools|Language|Content|Design)/.test(cat)) return true;
+          if (section.name === "Experience" && /(Leadership|General|Technical|Operations|Sales|People|Content)/.test(cat)) return true;
+          if (section.name === "Summary" || section.name === "General") return true;
           return false;
         });
         return {
@@ -2094,13 +3113,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       const risks = [];
       const lower = resume.toLowerCase();
       const roleFamily = detectRoleFamily(jd);
-      const roleMap = {
-        "DevOps / Platform": /devops|cloud|infrastructure|kubernetes|docker|terraform/,
-        "Frontend Engineering": /frontend|javascript|react|ui|css|html/,
-        "Backend Engineering": /backend|api|server|node|microservice|database/,
-        "Full-Stack Engineering": /frontend|backend|javascript|api|product/,
-        "Data / Analytics": /sql|dashboard|analytics|reporting|kpi|experiment/
-      };
+      const roleMap = getRoleAlignmentPattern(roleFamily);
       if (resume.length < 500) risks.push({ level: "medium", title: "Resume may be too short", note: "More content improves keyword coverage." });
       if (missing.length > 16) risks.push({ level: "high", title: "High keyword gap count", note: "Many priority terms are missing." });
       if (!/(\d+)\+?\s+years?/.test(lower)) risks.push({ level: "medium", title: "Experience length unclear", note: "Add years of experience to strengthen alignment." });
@@ -2108,7 +3121,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
         risks.push({ level: "medium", title: "Impact language could be stronger", note: "Use action verbs and outcomes." });
       if ([...strongActionVerbs].filter(v => lower.includes(v)).length < 4)
         risks.push({ level: "medium", title: "Action verbs are limited", note: "Add stronger delivery verbs." });
-      if (roleMap[roleFamily] && !roleMap[roleFamily].test(lower))
+      if (roleMap && !roleMap.test(lower))
         risks.push({ level: "high", title: "Role title alignment is weak", note: "Mirror the role family language." });
       if (sectionAnalysis.some(s => s.score < 30))
         risks.push({ level: "low", title: "Underused sections found", note: "Expand low-scoring sections with role-specific detail." });
@@ -2130,7 +3143,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       return missing.slice(0, 8).map((item, i) => ({
         term: item.term,
         weight: item.weight,
-        reason: `Place in ${sectionAnalysis[i % Math.max(sectionAnalysis.length, 1)]?.name || "Summary"} with a measurable outcome.`
+        reason: `Place in ${sectionAnalysis[i % Math.max(sectionAnalysis.length, 1)]?.name === "General" ? "Summary" : (sectionAnalysis[i % Math.max(sectionAnalysis.length, 1)]?.name || "Summary")} with a measurable outcome.`
       }));
     }
 
@@ -2143,7 +3156,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
         `Role Family: ${roleFamily}`,
         `Match Score: ${score.toFixed(1)}%`,
         `Confidence: ${getConfidence(score)}`,
-        `Top Role Terms: ${leading}`,
+        `Top Evidence Areas: ${leading}`,
         `Suggested Additions: ${recommended}`,
         `Section To Improve: ${weakest}`,
         `Key Risk: ${risks[0]?.title || "None"}`,
@@ -2158,16 +3171,52 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       const jdTF = calculateTermFrequency(jdTokens);
       const resumeTF = calculateTermFrequency(resumeTokens);
       const weights = buildImportanceWeights(jdTokens, jdTF);
+      const resumeSegments = buildResumeSegments(resume);
+      const phraseCandidates = extractPhraseCandidates(jd, weights);
 
-      let possible = 0, earned = 0;
+      let tokenPossible = 0, tokenEarned = 0;
+      let phrasePossible = 0, phraseEarned = 0;
       const highMatch = [], partialMatch = [], missing = [];
       const matchedTerms = new Set(), partialTerms = new Set();
 
+      phraseCandidates.forEach(phrase => {
+        phrasePossible += phrase.weight;
+        const best = getBestPhraseMatch(phrase, resumeSegments);
+        if (!best) {
+          missing.push({ term: phrase.term, weight: phrase.weight, type: "phrase" });
+          return;
+        }
+
+        if (best.score >= 0.92) {
+          highMatch.push({ term: phrase.term, weight: phrase.weight, evidence: best.evidence, type: "phrase" });
+          phraseEarned += phrase.weight;
+          phrase.tokens.forEach(token => matchedTerms.add(token));
+          return;
+        }
+
+        if (best.score >= 0.58) {
+          partialMatch.push({
+            term: phrase.term,
+            resumeTerm: best.evidence,
+            weight: phrase.weight,
+            score: phrase.weight * best.score,
+            type: "phrase"
+          });
+          phraseEarned += phrase.weight * best.score;
+          phrase.tokens.forEach(token => partialTerms.add(token));
+          return;
+        }
+
+        missing.push({ term: phrase.term, weight: phrase.weight, type: "phrase" });
+      });
+
       weights.forEach((meta, jdTerm) => {
-        possible += meta.weight;
+        tokenPossible += meta.weight;
         if (resumeTF.get(jdTerm)) {
-          highMatch.push({ term: meta.display, weight: meta.weight });
-          earned += meta.weight;
+          if (!highMatch.some(item => item.term === meta.display)) {
+            highMatch.push({ term: meta.display, weight: meta.weight, type: "token" });
+          }
+          tokenEarned += meta.weight;
           matchedTerms.add(jdTerm);
           return;
         }
@@ -2180,16 +3229,25 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
           }
         });
         if (best) {
-          partialMatch.push(best);
-          earned += best.score;
+          if (!partialMatch.some(item => item.term === best.term && item.resumeTerm === best.resumeTerm)) {
+            partialMatch.push({ ...best, type: "token" });
+          }
+          tokenEarned += best.score;
           partialTerms.add(best.resumeTerm);
         } else {
-          missing.push({ term: meta.display, weight: meta.weight });
+          if (!missing.some(item => item.term === meta.display)) {
+            missing.push({ term: meta.display, weight: meta.weight, type: "token" });
+          }
         }
       });
 
-      const score = possible ? clamp((earned / possible) * 100, 0, 100) : 0;
-      const topKeywords = [...weights.values()].map(i => ({ term: i.display, weight: i.weight })).sort((a, b) => b.weight - a.weight);
+      const tokenScore = tokenPossible ? (tokenEarned / tokenPossible) * 100 : 0;
+      const phraseScore = phrasePossible ? (phraseEarned / phrasePossible) * 100 : tokenScore;
+      const score = clamp((phraseScore * 0.62) + (tokenScore * 0.38), 0, 100);
+      const topKeywords = [
+        ...phraseCandidates.map(item => ({ term: item.term, weight: item.weight, type: "phrase" })),
+        ...[...weights.values()].map(i => ({ term: i.display, weight: i.weight, type: "token" }))
+      ].sort((a, b) => b.weight - a.weight).filter((item, index, list) => list.findIndex(other => other.term === item.term) === index);
       const roleFamily = detectRoleFamily(jd);
       const sectionAnalysis = buildSectionAnalysis(resume, weights, missing);
       const keywordCategories = buildKeywordCategories(topKeywords, missing, highMatch);
@@ -2221,7 +3279,10 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     // ===== RENDERING =====
     function createTags(items, type, fmt) {
       if (!items.length) return '<span class="tag">No items yet</span>';
-      return items.map(i => `<span class="tag ${type}">${escapeHtml(fmt(i))}<span class="tag-weight">${Math.round(i.weight)}</span></span>`).join("");
+      return items.map(i => {
+        const text = escapeHtml(fmt(i));
+        return `<span class="tag ${type}" title="${text}"><span class="tag-text">${text}</span><span class="tag-weight">${Math.round(i.weight)}</span></span>`;
+      }).join("");
     }
 
     function renderResults(analysis) {
@@ -2251,7 +3312,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
                     Top Suggestions
                   </h4>
                   <div class="suggestion-list stagger">
-                    ${analysis.suggestions.slice(0,4).map(i => `
+                    ${analysis.suggestions.slice(0, 4).map(i => `
                       <div class="suggestion-item reveal">
                         <div class="suggestion-item-text">
                           <strong>${escapeHtml(i.term)}</strong>
@@ -2353,8 +3414,8 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
                     <div class="list-item-text">
                       <strong>${escapeHtml(i.title)}</strong>
                       <em>${escapeHtml(i.note)}</em>
+                      <div style="font-size: 0.8rem; margin-top: 6px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(i.detail)}</div>
                     </div>
-                    <span class="pill-score">${escapeHtml(i.detail)}</span>
                   </div>
                 `).join("")}
               </div>
@@ -2370,15 +3431,15 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
             <div style="display:flex;flex-direction:column;gap:14px;">
               <div>
                 <div style="font-size:0.78rem;font-weight:700;color:var(--success);margin-bottom:8px;">Strong Matches (${analysis.highMatch.length})</div>
-                <div class="tags-wrap">${createTags(analysis.highMatch.slice(0,14), "high", i => i.term)}</div>
+                <div class="tags-wrap">${createTags(analysis.highMatch.slice(0, 14), "high", i => i.term)}</div>
               </div>
               <div>
                 <div style="font-size:0.78rem;font-weight:700;color:var(--warning);margin-bottom:8px;">Partial Matches (${analysis.partialMatch.length})</div>
-                <div class="tags-wrap">${createTags(analysis.partialMatch.slice(0,12), "partial", i => i.term + " ~ " + i.resumeTerm)}</div>
+                <div class="tags-wrap">${createTags(analysis.partialMatch.slice(0, 12), "partial", i => i.term + " ~ " + i.resumeTerm)}</div>
               </div>
               <div>
                 <div style="font-size:0.78rem;font-weight:700;color:var(--secondary);margin-bottom:8px;">Missing Keywords (${analysis.missing.length})</div>
-                <div class="tags-wrap">${createTags(analysis.missing.slice(0,12), "missing", i => i.term)}</div>
+                <div class="tags-wrap">${createTags(analysis.missing.slice(0, 12), "missing", i => i.term)}</div>
               </div>
             </div>
           </div>
@@ -2390,11 +3451,11 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
               Keyword Importance
             </h4>
             <div class="list-stack stagger">
-              ${analysis.topKeywords.slice(0,10).map((item, i) => `
+              ${analysis.topKeywords.slice(0, 10).map((item, i) => `
                 <div class="importance-item reveal">
                   <div class="importance-item-text">
-                    <strong>${i+1}. ${escapeHtml(item.term)}</strong>
-                    <span>Weighted by rarity, technical depth, and JD prominence</span>
+                    <strong>${i + 1}. ${escapeHtml(item.term)}</strong>
+                    <span>Weighted by AI relevance and JD importance</span>
                   </div>
                   <div class="badge">${Math.round(item.weight)}</div>
                 </div>
@@ -2444,7 +3505,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
           </svg>
           <h4>No analysis yet</h4>
-          <p>Add a job description and resume to see instant results as you type.</p>
+          <p>Add a job description and resume, then click Analyze Match to see results.</p>
         </div>
       `;
     }
@@ -2459,20 +3520,36 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
         el.historyContainer.innerHTML = '<div class="history-empty">No saved sessions yet.</div>';
         return;
       }
-      el.historyContainer.innerHTML = history.map((item, i) => `
+      el.historyContainer.innerHTML = history.map((item, i) => {
+        const meta = buildSessionMeta(item.jd || "", item.resume || "");
+        const primaryLabel = item.label && !/session$/i.test(item.label) ? item.label : meta.label;
+        const secondaryLabel = item.roleTitle || meta.roleTitle || item.roleFamily || meta.roleFamily || "General Professional";
+        return `
         <button class="history-item" type="button" data-history-index="${i}">
-          <strong>${escapeHtml(item.label)}</strong>
-          <span>${escapeHtml(item.roleFamily)} | ${item.score.toFixed(1)}% | ${escapeHtml(item.savedAt)}</span>
+          <strong>${escapeHtml(primaryLabel || "Saved Session")}</strong>
+          <span>${escapeHtml(secondaryLabel)} | ${item.score.toFixed(1)}% | ${escapeHtml(item.savedAt || "")}</span>
         </button>
-      `).join("");
+      `;
+      }).join("");
     }
 
     function saveSession(analysis) {
       const history = getHistory();
+      const meta = buildSessionMeta(el.jd.value, el.resume.value);
+
+      // Prioritize AI-detected roles for a more accurate label
+      const sessionRole = analysis.roleTitle || meta.roleTitle;
+      const sessionFamily = analysis.roleFamily || meta.roleFamily;
+      const sessionLabel = analysis.roleTitle
+        ? (meta.resumeIdentity ? `${meta.resumeIdentity} - ${analysis.roleTitle}` : analysis.roleTitle)
+        : meta.label;
+
       const item = {
-        label: `${detectRoleFamily(el.jd.value)} Session`,
-        roleFamily: detectRoleFamily(el.jd.value),
+        label: sessionLabel,
+        roleFamily: sessionFamily,
+        roleTitle: sessionRole,
         score: analysis.score,
+        source: analysis.source || (aiConfig.enabled ? "ai" : "local"),
         savedAt: new Date().toLocaleString(),
         jd: el.jd.value,
         resume: el.resume.value
@@ -2489,8 +3566,12 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       el.resume.value = item.resume;
       setUploadMeta("No file selected", false);
       updateCounts();
-      runAnalysis();
-      setStatus(`${item.label} restored.`);
+      clearTimeout(rtDebounce);
+      lastAnalysis = null;
+      updateActionStates();
+      showEmptyState();
+      setStatus(aiConfig.enabled ? `${item.label} restored. Click Analyze Match for AI analysis.` : `${item.label} restored.`);
+      if (!aiConfig.enabled) runAnalysis();
     }
 
     // ===== UI HELPERS =====
@@ -2522,6 +3603,24 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       el.rtIndicator.classList.remove("active");
     }
 
+    async function analyzeWithAi(jd, resume) {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ jd, resume })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "AI analysis failed.");
+      return hydrateAnalysis({ ...data, source: "ai" }, resume);
+    }
+
+    function analyzeLocally(jd, resume) {
+      return hydrateAnalysis({ ...performAnalysis(jd, resume), source: "local" }, resume);
+    }
+
     // ===== ANALYSIS RUNNERS =====
     function runAnalysis() {
       const jd = el.jd.value.trim();
@@ -2536,16 +3635,16 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       setStatus("Analyzing...", true);
       showRtIndicator();
       requestAnimationFrame(() => {
-        lastAnalysis = performAnalysis(jd, resume);
+        lastAnalysis = analyzeLocally(jd, resume);
         renderResults(lastAnalysis);
         saveSession(lastAnalysis);
         updateActionStates();
-        setStatus(`Score: ${lastAnalysis.score.toFixed(1)}% — ${lastAnalysis.confidence.toLowerCase()}`);
+        setStatus(`Score: ${lastAnalysis.score.toFixed(1)}% - ${lastAnalysis.confidence.toLowerCase()} (local preview)`);
         setTimeout(hideRtIndicator, 600);
       });
     }
 
-    function runAnalysisWithLoader() {
+    async function runAnalysisWithLoader() {
       const jd = el.jd.value.trim();
       const resume = el.resume.value.trim();
       if (!jd || !resume) {
@@ -2556,17 +3655,40 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
         return;
       }
       el.loader.classList.add("visible");
-      setStatus("Analyzing your resume...", true);
+      setStatus(aiConfig.enabled ? "Analyzing with AI..." : "Analyzing your resume...", true);
       showRtIndicator();
-      setTimeout(() => {
-        lastAnalysis = performAnalysis(jd, resume);
+      try {
+        lastAnalysis = aiConfig.enabled
+          ? await analyzeWithAi(jd, resume)
+          : analyzeLocally(jd, resume);
         renderResults(lastAnalysis);
         saveSession(lastAnalysis);
         updateActionStates();
+        setStatus(`Score: ${lastAnalysis.score.toFixed(1)}% - ${lastAnalysis.confidence.toLowerCase()}${lastAnalysis.source === "ai" ? " with AI" : " (local preview)"}`);
+      } catch (error) {
+        if (aiConfig.enabled) {
+          try {
+            lastAnalysis = analyzeLocally(jd, resume);
+            renderResults(lastAnalysis);
+            saveSession(lastAnalysis);
+            updateActionStates();
+            setStatus(`${error.message} Showing local preview instead.`);
+          } catch {
+            lastAnalysis = null;
+            updateActionStates();
+            showEmptyState();
+            setStatus(error.message || "Analysis failed.");
+          }
+        } else {
+          lastAnalysis = null;
+          updateActionStates();
+          showEmptyState();
+          setStatus(error.message || "Analysis failed.");
+        }
+      } finally {
         el.loader.classList.remove("visible");
-        setStatus(`Score: ${lastAnalysis.score.toFixed(1)}% — ${lastAnalysis.confidence.toLowerCase()}`);
         setTimeout(hideRtIndicator, 600);
-      }, 500);
+      }
     }
 
     function scheduleRealTimeAnalysis() {
@@ -2580,9 +3702,16 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
         if (!jd && !resume) {
           setStatus("Ready when you are.");
         } else {
-          setStatus("Add both fields for real-time analysis.");
+          setStatus("Add both fields for analysis.");
         }
         showEmptyState();
+        return;
+      }
+      if (aiConfig.enabled) {
+        lastAnalysis = null;
+        updateActionStates();
+        showEmptyState();
+        setStatus("Ready for AI analysis.");
         return;
       }
       setStatus("Typing...", true);
@@ -2620,9 +3749,10 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
         setUploadMeta(file.name, true);
         updateCounts();
         lastAnalysis = null;
+        updateActionStates();
         showEmptyState();
-        setStatus(`${file.name} imported. Click Analyze Match or start typing.`);
-        scheduleRealTimeAnalysis();
+        setStatus(aiConfig.enabled ? `${file.name} imported. Click Analyze Match for AI analysis.` : `${file.name} imported. Click Analyze Match or start typing.`);
+        if (!aiConfig.enabled) scheduleRealTimeAnalysis();
       } catch {
         setUploadMeta("Could not read this PDF", false);
         setStatus("PDF import failed.");
@@ -2637,12 +3767,12 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       const shell = document.getElementById("resumeEditorShell");
       if (!shell) return;
       const prevent = e => { e.preventDefault(); e.stopPropagation(); };
-      ["dragenter","dragover","dragleave","drop"].forEach(ev => {
+      ["dragenter", "dragover", "dragleave", "drop"].forEach(ev => {
         shell.addEventListener(ev, prevent, false);
         document.body.addEventListener(ev, prevent, false);
       });
-      ["dragenter","dragover"].forEach(ev => shell.addEventListener(ev, () => shell.classList.add("drag-over"), false));
-      ["dragleave","drop"].forEach(ev => shell.addEventListener(ev, () => shell.classList.remove("drag-over"), false));
+      ["dragenter", "dragover"].forEach(ev => shell.addEventListener(ev, () => shell.classList.add("drag-over"), false));
+      ["dragleave", "drop"].forEach(ev => shell.addEventListener(ev, () => shell.classList.remove("drag-over"), false));
       shell.addEventListener("drop", e => {
         const file = e.dataTransfer.files[0];
         if (!file) return;
@@ -2686,7 +3816,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       updateActionStates();
       clearTimeout(rtDebounce);
       showEmptyState();
-      setStatus("Cleared. Ready for a new analysis.");
+      setStatus(aiConfig.enabled ? "Cleared. Ready for AI analysis." : "Cleared. Ready for a new analysis.");
     }
 
     async function copyResults() {
@@ -2714,10 +3844,13 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     function saveSnapshot() {
       if (!lastAnalysis) { setStatus("Run analysis first."); return; }
       const history = getHistory();
+      const meta = buildSessionMeta(el.jd.value, el.resume.value);
       const item = {
-        label: `Snapshot ${new Date().toLocaleTimeString()}`,
-        roleFamily: lastAnalysis.roleFamily,
+        label: meta.label,
+        roleFamily: meta.roleFamily,
+        roleTitle: meta.roleTitle,
         score: lastAnalysis.score,
+        source: lastAnalysis.source || (aiConfig.enabled ? "ai" : "local"),
         savedAt: new Date().toLocaleString(),
         jd: el.jd.value,
         resume: el.resume.value
@@ -2848,14 +3981,21 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     }
 
     // ===== INIT =====
-    initRevealObserver();
-    setupDragAndDrop();
-    initTheme();
-    renderHistory();
-    updateCounts();
-    updateActionStates();
-    showEmptyState();
-    observeReveals();
+    async function initApp() {
+      initRevealObserver();
+      setupDragAndDrop();
+      initTheme();
+      await fetchAiConfig();
+      renderHistory();
+      updateCounts();
+      updateActionStates();
+      showEmptyState();
+      setStatus(aiConfig.enabled ? "Ready for AI analysis." : "Ready when you are.");
+      observeReveals();
+    }
+
+    initApp();
   </script>
 </body>
+
 </html>
