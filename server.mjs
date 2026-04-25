@@ -377,7 +377,7 @@ async function requestAiAnalysis(jd, resume) {
     }
 
     if (response.status === 429 || detail.includes("quota")) {
-      detail = "Free tier quota exceeded! Please check your Google AI Studio limits or try again tomorrow.";
+      detail = "You've reached the free daily limit for AI analysis. Please try again tomorrow!";
     } else if (detail.length > 150) {
       detail = `API Error (HTTP ${response.status}). Check server console for full details.`;
     }
