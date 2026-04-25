@@ -59,8 +59,9 @@ It is not a full multi-tenant SaaS yet because there is no database, authenticat
 
 ```mermaid
 flowchart LR
-    U[User Browser] --> A[MatchlyPro Node Server]
-    A --> S[Static App<br/>index.html + health.html]
+    U[User Browser] --> V[Vercel Edge Network]
+    V --> S[Static Assets<br/>index.html]
+    V --> A[Vercel Serverless Function<br/>@vercel/node API]
     A --> R[Gemini API<br/>gemini-2.5-flash-lite]
     S --> J[Browser App Logic]
     J --> P[PDF.js Parsing In Browser]
@@ -99,9 +100,10 @@ sequenceDiagram
 
 ### Product experience
 
+- deployed as a high-performance hybrid app with Vercel Serverless Functions powering the AI backend
 - deep AI integration with graceful fallbacks and user-friendly quota/rate-limit alerts
 - robust, dynamic UI that intelligently handles long AI-generated text without breaking layouts
-- browser-first workflow with no account required
+- browser-first workflow with secure, client-side PDF parsing and no account required
 - privacy-friendly resume analysis
 - responsive single-page interface
 - dynamic local history that automatically names sessions based on AI-detected job titles
@@ -248,8 +250,9 @@ That release tag triggers the production workflow, publishes release artifacts, 
 
 ## Operations Notes
 
-- `vercel.json` disables Git-based Vercel auto deployment
-- the app exposes `/health` for deployment verification
+- explicit Builder architecture in `vercel.json` elegantly runs the same Node codebase locally via Docker and in the cloud as a Vercel Serverless Function
+- `vercel.json` disables Git-based Vercel auto deployment for manual, tagged release control
+- the app exposes `/health` for CI deployment verification
 - Docker runtime uses the Node server for app and API delivery
 - CI and release jobs depend on repository secrets for external integrations
 
