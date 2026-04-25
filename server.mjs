@@ -422,7 +422,7 @@ async function serveStatic(req, res, pathname) {
   createReadStream(filePath).pipe(res);
 }
 
-const server = createServer(async (req, res) => {
+export default async function handler(req, res) {
   try {
     const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
     const { pathname } = requestUrl;
@@ -461,8 +461,11 @@ const server = createServer(async (req, res) => {
   } catch (error) {
     json(res, 500, { error: error instanceof Error ? error.message : "Unexpected server error." });
   }
-});
+}
 
-server.listen(port, () => {
-  console.log(`MatchlyPro server listening on http://localhost:${port}`);
-});
+if (!process.env.VERCEL) {
+  const server = createServer(handler);
+  server.listen(port, () => {
+    console.log(`MatchlyPro server listening on http://localhost:${port}`);
+  });
+}
