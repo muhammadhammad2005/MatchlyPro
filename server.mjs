@@ -369,7 +369,19 @@ async function requestAiAnalysis(jd, resume) {
   }
 
   if (!response.ok) {
-    const detail = parsedResponse?.error?.message || parsedResponse?.message || rawText || `HTTP ${response.status}`;
+    let detail = "";
+    if (Array.isArray(parsedResponse) && parsedResponse[0]?.error) {
+      detail = parsedResponse[0].error.message;
+    } else {
+      detail = parsedResponse?.error?.message || parsedResponse?.message || rawText || `HTTP ${response.status}`;
+    }
+
+    if (response.status === 429 || detail.includes("quota")) {
+      detail = "Free tier quota exceeded! Please check your Google AI Studio limits or try again tomorrow.";
+    } else if (detail.length > 150) {
+      detail = `API Error (HTTP ${response.status}). Check server console for full details.`;
+    }
+
     throw new Error(`AI analyze failed: ${detail}`);
   }
 
