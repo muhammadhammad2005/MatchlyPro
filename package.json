@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "node server.mjs",
-    "static": "serve -s . -p 3000",
+    "static": "node server.mjs",
     "build": "node ./scripts/validate-project.mjs",
     "lint": "node ./scripts/validate-project.mjs",
     "test": "node ./scripts/smoke-static-site.mjs",

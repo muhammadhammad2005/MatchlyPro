@@ -203,9 +203,20 @@ cp .env.example .env
 
 2. Set these values:
 
-- `GEMINI_API_KEY`
-- `GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`
-- `GEMINI_MODEL=gemini-2.5-flash-lite`
+- `AI_API_KEY`
+- `AI_BASE_URL`
+- `AI_MODEL`
+- `AI_PROVIDER` (optional, for display only)
+
+OpenAI example:
+
+- `AI_BASE_URL=https://api.openai.com/v1`
+- `AI_MODEL=gpt-4.1-mini`
+
+Gemini OpenAI-compatible example:
+
+- `AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`
+- `AI_MODEL=gemini-2.5-flash-lite`
 
 3. Start the app:
 
@@ -216,7 +227,18 @@ npm start
 
 Open `http://localhost:3000`
 
-If the Gemini env vars are not set, the app still runs and falls back to local heuristic analysis.
+Legacy `OPENAI_*` and `GEMINI_*` env vars are still supported, but `AI_*` is the recommended format for local use and Vercel.
+
+If no AI env vars are set, the app still runs and falls back to local heuristic analysis.
+
+### Vercel Environment Variables
+
+Set the same `AI_*` variables in your Vercel project settings:
+
+- `AI_API_KEY`
+- `AI_BASE_URL`
+- `AI_MODEL`
+- `AI_PROVIDER` (optional)
 
 ### Run with Docker
 

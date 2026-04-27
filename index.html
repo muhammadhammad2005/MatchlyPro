@@ -2620,6 +2620,8 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     let lastAnalysis = null;
     let rtDebounce = null;
     let aiConfig = { enabled: false, provider: "AI", model: "" };
+    let aiConfigReady = false;
+    let apiBaseUrl = "";
     const memoryStore = new Map();
 
     // ===== STORAGE =====
@@ -2682,19 +2684,50 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       };
     }
 
-    async function fetchAiConfig() {
-      try {
-        const res = await fetch("/api/config", { headers: { "Accept": "application/json" } });
-        if (!res.ok) throw new Error("Config unavailable");
-        const data = await res.json();
-        aiConfig = {
-          enabled: Boolean(data.enabled),
-          provider: data.provider || "AI",
-          model: data.model || ""
-        };
-      } catch {
-        aiConfig = { enabled: false, provider: "AI", model: "" };
+    function buildApiCandidates() {
+      const candidates = new Set();
+      if (window.location.protocol !== "file:" && window.location.origin) {
+        candidates.add(window.location.origin);
       }
+
+      const localHostCandidates = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080"
+      ];
+
+      localHostCandidates.forEach(origin => candidates.add(origin));
+      return [...candidates];
+    }
+
+    function apiUrl(path) {
+      return `${apiBaseUrl}${path}`;
+    }
+
+    async function fetchAiConfig() {
+      const candidates = buildApiCandidates();
+      for (const origin of candidates) {
+        try {
+          const res = await fetch(`${origin}/api/config`, { headers: { "Accept": "application/json" } });
+          if (!res.ok) continue;
+          const data = await res.json();
+          apiBaseUrl = origin;
+          aiConfig = {
+            enabled: Boolean(data.enabled),
+            provider: data.provider || "AI",
+            model: data.model || ""
+          };
+          aiConfigReady = true;
+          return;
+        } catch {
+          // Try the next candidate origin.
+        }
+      }
+
+      apiBaseUrl = "";
+      aiConfig = { enabled: false, provider: "AI", model: "" };
+      aiConfigReady = true;
     }
 
     // ===== TEXT PROCESSING =====
@@ -2867,6 +2900,30 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       return line.replace(/\s+/g, " ").replace(/^[\W_]+|[\W_]+$/g, "").trim();
     }
 
+    const jobTitleKeywordPattern = /(engineer|developer|analyst|manager|designer|specialist|consultant|administrator|architect|lead|intern|director|officer|coordinator|scientist|translator|writer|copywriter|marketer|recruiter|assistant|executive|strategist|producer|editor|accountant|bookkeeper|teacher|instructor|nurse|tester|qa|product owner|product manager|scrum master|support|sales|operations|seo|devops|sre|technician)/i;
+
+    function cleanJobTitleCandidate(value) {
+      let candidate = normalizeLine(value || "");
+      if (!candidate) return "";
+      candidate = candidate
+        .replace(/^(job title|title|role|position)\s*:\s*/i, "")
+        .replace(/^(we are|we're|company is)\s+(actively\s+)?(hiring|seeking|looking for)\s+(an?\s+)?/i, "")
+        .replace(/^(hiring|seeking|looking for)\s+(an?\s+)?/i, "")
+        .replace(/^(open position|job opening)\s*:\s*/i, "")
+        .replace(/\s+(to join|to support|who will|who can|responsible for|for our|for the|with experience in)\b.*$/i, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/[|•]+/g, " ")
+        .replace(/\s{2,}/g, " ")
+        .trim()
+        .replace(/[,:;.-]+$/g, "")
+        .trim();
+
+      if (!candidate || candidate.length < 3 || candidate.length > 90) return "";
+      if (/^(responsibilities|requirements|about (the role|us|company)|overview|location|salary|benefits)$/i.test(candidate)) return "";
+      if (!jobTitleKeywordPattern.test(candidate)) return "";
+      return candidate;
+    }
+
     function isResumeSectionHeading(line) {
       return /^(professional summary|summary|profile|experience highlights|experience|employment|work history|projects|project highlights|skills|additional skills|technical skills|core skills|education|academic|certifications|certificates)$/i.test(line);
     }
@@ -2886,16 +2943,33 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
 
     function extractJobTitle(jd) {
       const lines = jd.replace(/\r/g, "").split("\n").map(normalizeLine).filter(Boolean);
-      for (const line of lines.slice(0, 12)) {
-        if (line.length > 90) continue;
+      const candidates = [];
+
+      for (const [index, line] of lines.slice(0, 18).entries()) {
+        if (line.length > 140) continue;
+        if (/responsibilities|requirements|about the role|about us|company overview|what you('|’)ll do|what we're looking for|preferred qualifications/i.test(line)) continue;
+
         const explicit = /^(job title|title|role|position)\s*:\s*(.+)$/i.exec(line);
-        if (explicit?.[2]) return explicit[2].trim();
-        if (/responsibilities|requirements|about the role|about us|company overview/i.test(line)) continue;
-        if (/engineer|developer|analyst|manager|designer|specialist|consultant|administrator|architect|lead|intern|director|officer|coordinator|scientist|translator|writer|copywriter|marketer|recruiter|freelancer|assistant/i.test(line)) {
-          return line;
-        }
+        const directCandidate = cleanJobTitleCandidate(explicit?.[2] || line);
+        if (!directCandidate) continue;
+
+        let score = 100 - index * 3;
+        if (explicit?.[2]) score += 40;
+        if (line.length <= 70) score += 12;
+        if (!/[.!?]$/.test(line)) score += 6;
+        if (/senior|junior|lead|principal|staff|head|associate|intern/i.test(directCandidate)) score += 8;
+        if (/ at | with | for | who | and | responsible /i.test(directCandidate)) score -= 18;
+
+        candidates.push({ title: directCandidate, score });
       }
-      return "";
+
+      if (candidates.length) {
+        candidates.sort((a, b) => b.score - a.score || a.title.length - b.title.length);
+        return candidates[0].title;
+      }
+
+      const sentenceMatch = jd.match(new RegExp(`(?:hiring|seeking|looking for|position(?:\\s+is)?|role(?:\\s+is)?)\\s+(?:an?\\s+)?([A-Za-z][A-Za-z/&,()\\- ]{2,80}?\\b${jobTitleKeywordPattern.source}\\b[A-Za-z/&,()\\- ]{0,30})`, "i"));
+      return cleanJobTitleCandidate(sentenceMatch?.[1] || "");
     }
 
     function buildSessionMeta(jd, resume) {
@@ -2908,7 +2982,25 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       return {
         label,
         roleFamily,
+        resumeIdentity,
         roleTitle: roleTitle || roleFamily
+      };
+    }
+
+    function resolveSessionDetails(meta, analysis) {
+      const aiRoleTitle = normalizeLine(analysis?.roleTitle || "");
+      const aiRoleFamily = normalizeLine(analysis?.roleFamily || "");
+      const hasUsefulAiRole = aiRoleTitle && !/^resume match analysis$/i.test(aiRoleTitle);
+      const roleTitle = hasUsefulAiRole ? aiRoleTitle : meta.roleTitle;
+      const roleFamily = aiRoleFamily || meta.roleFamily;
+      const label = roleTitle
+        ? (meta.resumeIdentity ? `${meta.resumeIdentity} - ${roleTitle}` : roleTitle)
+        : meta.label;
+
+      return {
+        label,
+        roleFamily,
+        roleTitle
       };
     }
 
@@ -3536,18 +3628,12 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     function saveSession(analysis) {
       const history = getHistory();
       const meta = buildSessionMeta(el.jd.value, el.resume.value);
-
-      // Prioritize AI-detected roles for a more accurate label
-      const sessionRole = analysis.roleTitle || meta.roleTitle;
-      const sessionFamily = analysis.roleFamily || meta.roleFamily;
-      const sessionLabel = analysis.roleTitle
-        ? (meta.resumeIdentity ? `${meta.resumeIdentity} - ${analysis.roleTitle}` : analysis.roleTitle)
-        : meta.label;
+      const session = resolveSessionDetails(meta, analysis);
 
       const item = {
-        label: sessionLabel,
-        roleFamily: sessionFamily,
-        roleTitle: sessionRole,
+        label: session.label,
+        roleFamily: session.roleFamily,
+        roleTitle: session.roleTitle,
         score: analysis.score,
         source: analysis.source || (aiConfig.enabled ? "ai" : "local"),
         savedAt: new Date().toLocaleString(),
@@ -3604,7 +3690,7 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     }
 
     async function analyzeWithAi(jd, resume) {
-      const response = await fetch("/api/analyze", {
+      const response = await fetch(apiUrl("/api/analyze"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3625,6 +3711,10 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     function runAnalysis() {
       const jd = el.jd.value.trim();
       const resume = el.resume.value.trim();
+      if (!aiConfigReady) {
+        setStatus("Preparing analysis...");
+        return;
+      }
       if (!jd || !resume) {
         lastAnalysis = null;
         updateActionStates();
@@ -3647,6 +3737,10 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     async function runAnalysisWithLoader() {
       const jd = el.jd.value.trim();
       const resume = el.resume.value.trim();
+      if (!aiConfigReady) {
+        setStatus("Preparing AI...");
+        return;
+      }
       if (!jd || !resume) {
         lastAnalysis = null;
         updateActionStates();
@@ -3683,7 +3777,10 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
           lastAnalysis = null;
           updateActionStates();
           showEmptyState();
-          setStatus(error.message || "Analysis failed.");
+          const backendHint = window.location.protocol === "file:" || /localhost|127\.0\.0\.1/.test(window.location.hostname)
+            ? " AI backend not found. Run `npm start` and open http://localhost:3000."
+            : "";
+          setStatus((error.message || "Analysis failed.") + backendHint);
         }
       } finally {
         el.loader.classList.remove("visible");
@@ -3694,6 +3791,11 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
     function scheduleRealTimeAnalysis() {
       clearTimeout(rtDebounce);
       updateCounts();
+      if (!aiConfigReady) {
+        setStatus("Preparing AI...");
+        showEmptyState();
+        return;
+      }
       const jd = el.jd.value.trim();
       const resume = el.resume.value.trim();
       if (!jd || !resume) {
@@ -3845,10 +3947,11 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       if (!lastAnalysis) { setStatus("Run analysis first."); return; }
       const history = getHistory();
       const meta = buildSessionMeta(el.jd.value, el.resume.value);
+      const session = resolveSessionDetails(meta, lastAnalysis);
       const item = {
-        label: meta.label,
-        roleFamily: meta.roleFamily,
-        roleTitle: meta.roleTitle,
+        label: session.label,
+        roleFamily: session.roleFamily,
+        roleTitle: session.roleTitle,
         score: lastAnalysis.score,
         source: lastAnalysis.source || (aiConfig.enabled ? "ai" : "local"),
         savedAt: new Date().toLocaleString(),
@@ -3990,7 +4093,9 @@ Analyst with 5 years of experience delivering dashboards, reporting, and busines
       updateCounts();
       updateActionStates();
       showEmptyState();
-      setStatus(aiConfig.enabled ? "Ready for AI analysis." : "Ready when you are.");
+      setStatus(aiConfig.enabled
+        ? "Ready for AI analysis."
+        : "AI backend not detected. Run `npm start` and open http://localhost:3000.");
       observeReveals();
     }
 
